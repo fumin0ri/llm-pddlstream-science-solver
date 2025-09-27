@@ -1,0 +1,1 @@
+At the moment there are four cards in the deck. The top card can mill and the third card can be used to discard. No other card has any abilities.

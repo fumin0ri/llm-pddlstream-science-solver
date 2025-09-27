@@ -1,0 +1,8 @@
+Now I want you to place both the apple and the banana in the bowl, which should be placed on the coffee table.
+
+The current state is:
+- robot at cabinet_1
+- apple_1 in/on dinner_table_1
+- cabinet_1 is closed
+- banana_1 in/on cabinet
+- bowl_1 in/on cabinet

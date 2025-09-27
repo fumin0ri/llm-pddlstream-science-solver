@@ -10,6 +10,7 @@ class Predicate(TypedDict):
     raw: str # raw LLM output
     params: ParameterList # parameters of the predicate
     clean: str # clean version of the predicate, with comment
+    signature: str # clean version of the predicate, without comment. e.g (at ?t - truck ?l - location)
 
 class Action(TypedDict):
     name: str

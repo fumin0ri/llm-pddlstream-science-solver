@@ -1,0 +1,9 @@
+I would like you to put the hat on the bed and then return the hat box. Make sure to close everything, hat box included, after yourself.
+
+The state you're starting from is:
+- robot at sofa_1
+- hatbox_1 in/on wardrobe_1
+- wardrobe_1 is not opened
+- hatbox_1 is not opened
+- hat_1 in/on hatbox_1
+- robot is not holding anythings

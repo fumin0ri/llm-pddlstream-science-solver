@@ -1,0 +1,1 @@
+The robot has already used its climbing ability and is atop the wall in the top left of a 2 high 6 wide grid. There are walls at top left, the entire third column and the upper location in the fifth column. The goal is for the robot to reach the top right. 

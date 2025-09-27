@@ -1,0 +1,1 @@
+Currently the world is 3 by 2, three rows and two columns. The robot is located in the top left and the goal is for it to reach the bottom right. There are walls along the entire center row.

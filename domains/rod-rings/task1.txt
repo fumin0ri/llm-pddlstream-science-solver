@@ -1,0 +1,1 @@
+Currently you're holding ring1. There are also two rods, one with ring2 on ring3 and one with ring4 on ring5. The goal is to invert the orders, so that ring5 is on ring4 and ring3 on ring2.

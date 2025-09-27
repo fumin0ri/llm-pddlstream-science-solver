@@ -1,0 +1,8 @@
+I want you to put the toy back in its box which should be put into the wardrobe without closing it. The state you're starting from is:
+
+- robot at coffee_table_1
+- wardrobe_1 is closed
+- toy_1 in/on bookcase
+- toybox_1 in/on coffee_table_1
+- robot is not holding anything
+. toybox_1 is closed

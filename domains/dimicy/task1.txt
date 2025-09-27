@@ -1,0 +1,1 @@
+Currently, the deck consists of three cards. The top and bottom card can both be used to either mill or cycle. The middle card has no abilities.

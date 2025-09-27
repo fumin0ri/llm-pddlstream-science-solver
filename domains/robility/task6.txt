@@ -1,0 +1,1 @@
+In this problem the grid is 5 by 4. The robot starts in the top right, (1,4), but has already used the climbing ability. The goal is to reach the bottom left, (5,1). There are walls at (2,2), (2,3), (2,4), (4,1), (4,2), (4,3) and (5,1). 

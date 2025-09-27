@@ -1,0 +1,1 @@
+There are are currently four pools. Pool L, pool R and pool D are each connected to pool C. At the moment there are bad piranhas in pool R and the remaining pools all contain nice trouts. I want to move the piranhas to pool L and the trouts to pool R. 

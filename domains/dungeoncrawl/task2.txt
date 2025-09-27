@@ -1,0 +1,1 @@
+At the moment a knight (can use swords) and a squire (can use daggers) in a church which is connected to a crypt with two zombies. The squire is carrying a dagger and a sword. The goal is to defeat all the zombies.

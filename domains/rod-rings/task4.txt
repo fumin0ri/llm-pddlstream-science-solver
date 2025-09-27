@@ -1,0 +1,1 @@
+You're holding a ring. Additionally, there are two rods each with three rings. Rod 1 has rings 1 to 3, ordered left to right, and rod 2 has rings 4 to 6, again left to right. I want you to swap the ring you're holding with ring 5, with all other rings staying where they are.

@@ -1,0 +1,1 @@
+In the current problem, you've got three rods and ten rings. You're holding ring 0. Rings 1 - 3 are on rod 1. Rings 4 - 6 are on rod 2, and rings 7 - 9 are on rod 3. All ordered left to right. I want you to swap the rightmost two rings of each set of rings, so we get 1-3-2 for example. However, I don't care about which rod they end up on.

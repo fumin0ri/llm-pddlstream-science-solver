@@ -1,0 +1,1 @@
+At the moment there are four cards in the deck. The first card can cycle, the second card has no ability, the third can cycle or discard, and the fourth can discard. 

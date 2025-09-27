@@ -1,0 +1,1 @@
+The AI system controls a robot navigating a square grid with walls. The robot has three special abilities, each usable once: breaking a wall, climbing up a wall, and climbing down a wall.

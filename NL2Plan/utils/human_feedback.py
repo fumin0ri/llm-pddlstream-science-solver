@@ -10,7 +10,7 @@ def human_feedback(info: str):
         contents.append(line)
     resp = "\n".join(contents)
 
-    if resp.strip().lower() == "none":
+    if resp.strip().lower() == "none" or resp.strip() == "":
         return None # No feedback
 
     return resp

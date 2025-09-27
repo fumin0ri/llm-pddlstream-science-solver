@@ -1,0 +1,32 @@
+# Task
+You are a PDDL expert. Your task is to correct all errors and flaws in the PDDL domain provided below. You are free to modify the file as you see fit, but it must correctly model the described domain. You can for example remove or combine actions, modify the predicates, or change parameters. To aid you, you're provided with a checklist of common flaws you ought to address. Respond with the corrected PDDL domain model itself within a markdown block under the "# Domain" header. Make sure to leave the revised domain with clarifying comments, in particular, the types and predicates need to be commented on the same line they are defined. When defining the actions, each parameter should be on a new line. 
+
+Any predicates that already are used in a symmetrical manner should be kept in said symmetrical manner. It is good praxis to always start each action precondition and effect with an enveloping "and" statement. Each action must have exactly one each of the sections ":parameters ({PARAMETERS HERE})", ":precondition(and( {PRECONDITIONS HERE} ))", ":effect(and( {EFFECTS HERE} ))", any actions without effects should be removed. Avoid using constants. Everything used should be a parameter or similar, and therefore start with a question mark.
+
+Checklist:
+- Are there any syntactical mistakes?
+- Do any actions have incorrect or missing effects? If an action has no effects, it should be removed.
+- Do any actions have incorrect or missing preconditions?
+- Is the type hierarchy correct?
+- Are any predicates used inconsistently?
+- Are there any predicates that should be used symmetrically but aren't? For example, "connected" or "neighbor" predicates should be `(or (connected ?a ?b) (connected ?b ?a))` rather than `(connected ?a ?b)`. Any predicates that already are symmetrical should be kept.
+- Are any predicates duplicates or opposites? For example, if "open" is a predicate, "closed" shouldn't be another predicate but instead inferred from "(not (open))".
+- Are any actions overly similar and should be combined? If two actions function the same, but over different types, for example, they should likely be combined. It is possible that several different pairs of actions ought to be combined.
+- Do any actions have implicit assumptions to be made explicit? There should be no need for assumptions, existing domain knowledge, or intuition when interpreting the actions.
+- Are there any other flaws in the domain which must be addressed? This could be anything.
+
+You can use the following advanced PDDL syntax if needed:
+- Grounded Predicates: `(predicate1)` is a predicate without any arguments. It can be used to model general properties, such as plan status.
+- Equality: `(= ?o1 ?o2)` only evaluates to true if ?o1 and ?o2 are the same object.
+- Disjunctive  Preconditions: `(or (predicate1 ?t) (predicate2 ?t))` evaluates to true if at least one of "(predicate1 ?t)" or "(predicate2 ?t)" evaluates to true. Only applicable in preconditions.
+- Existential Preconditions: `(exists (?t - type) (predicate ?t))` evaluates to true if there is any object ?t of type "type" such that "(predicate ?t)" evaluates to true. Only applicable in preconditions.
+- Implication: `(imply (predicate1 ?t) (predicate2 ?t))` evaluates to true if either "(predicate1 ?t)" is false or both are true. This is the closest equivalent to an if-statement in PDDL. Only applicable in preconditions.
+- Universal Preconditions: `(forall (?t - type) (predicate ?t))` evaluates to true if "(predicate ?t)" evaluates to true for all objects ?t of type "type". Only applicable in preconditions. Can also be used to set sets of predicates in effects.
+- Conditional Effects: `(when (ANTECENT) (CONSEQUENCE))`. The effects in CONSEQUENCE are only applied if the ANTECENT expression evaluates to true. Only applicable in effects. Note that if there are several conditional effects, even if they're disjoint, they need to be enveloped in an "and" statement. 
+
+The domain aims to model the following:
+> {domain_desc}
+
+```
+{domain}
+```

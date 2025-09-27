@@ -2,7 +2,7 @@ import os
 
 from .logger import Logger
 from .paths import results_dir
-from .pddl_types import Action
+from .pddl_types import Action, Predicate
 
 class PddlGeneratorClass:
     def __init__(self):
@@ -34,6 +34,8 @@ class PddlGeneratorClass:
         self.objects = ""
         self.init = ""
         self.goal = ""
+        self.overwritten_domain = None
+        self.overwritten_problem = None
 
     def add_action(self, action: Action):
         if not self.started:
@@ -74,6 +76,24 @@ class PddlGeneratorClass:
             return
         self.goal = goal
 
+    def get_objects(self):
+        if not self.started:
+            print("Warning: PDDLGenerator not started. Returning nothing.")
+            return ""
+        return self.objects
+    
+    def get_init(self):
+        if not self.started:
+            print("Warning: PDDLGenerator not started. Returning nothing.")
+            return ""
+        return self.init
+
+    def get_goal(self):
+        if not self.started:
+            print("Warning: PDDLGenerator not started. Returning nothing.")
+            return ""
+        return self.goal
+
     def generate(self):
         if not self.started:
             raise ValueError("PDDLGenerator not started. Start PDDLGenerator before generating.")
@@ -83,20 +103,21 @@ class PddlGeneratorClass:
             f.write(domain)
         with open(self.problem_file, "w") as f:
             f.write(problem)
+        return domain, problem
 
-    def generate_domain(self, domain: str, types: str, predicates: str, actions: list[Action]):
-        if not self.started:
-            raise ValueError("PDDLGenerator not started. Start PDDLGenerator before generating domain.")
-        
+    def generate_domain(self, domain: str, types: str, predicates: str, actions: list[Action], allow_overwrite = True):        
+        if self.overwritten_domain is not None and allow_overwrite:
+            return self.overwritten_domain
+
         # Write domain file
         desc = ""
         desc += f"(define (domain {domain})\n"
-        desc += self.indent(f"(:requirements\n   :strips :typing :equality :negative-preconditions :disjunctive-preconditions\n   :universal-preconditions :conditional-effects\n)", 1) + "\n\n"
+        desc += self.indent(f"(:requirements\n   :strips :typing :equality :negative-preconditions :disjunctive-preconditions\n   :universal-preconditions :conditional-effects :existential-preconditions\n)", 1) + "\n\n"
         desc += f"   (:types \n{self.indent(types)}\n   )\n\n"
         desc += f"   (:predicates \n{self.indent(predicates)}\n   )"
         desc += self.action_descs(actions)
         desc += "\n)"
-        desc = desc.replace("AND","and").replace("OR","or") # The python PDDL package can't handle capital AND and OR
+        desc = desc.lower() # The python PDDL package can't handle capital AND and OR
         return desc
     
     def action_descs(self, actions = None) -> str:
@@ -107,9 +128,9 @@ class PddlGeneratorClass:
             desc += "\n\n" + self.indent(self.action_desc(action),1)
         return desc
 
-    def generate_problem(self, domain: str, objects: str, init: str, goal: str):
-        if not self.started:
-            raise ValueError("PDDLGenerator not started. Start PDDLGenerator before generating problem.")
+    def generate_problem(self, domain: str, objects: str, init: str, goal: str, allow_overwrite = True):
+        if self.overwritten_problem is not None and allow_overwrite:
+            return self.overwritten_problem
         
         # Write problem file
         desc = "(define\n"
@@ -119,7 +140,7 @@ class PddlGeneratorClass:
         desc += f"   (:init\n{self.indent(init)}\n   )\n\n"
         desc += f"   (:goal\n{self.indent(goal)}\n   )\n\n"
         desc += ")"
-        desc = desc.replace("AND","and").replace("OR","or") # The python PDDL package can't handle capital AND and OR
+        desc = desc.lower() # The python PDDL package can't handle capital AND and OR
         return desc
 
     def indent(self, string: str, level: int = 2):
@@ -134,6 +155,24 @@ class PddlGeneratorClass:
         desc +=  ")"
         return desc
     
+    def get_domain(self):
+        if not self.started:
+            raise ValueError("PDDLGenerator not started. Start PDDLGenerator before getting domain file.")
+        if self.overwritten_domain is not None:
+            return self.overwritten_domain
+        self.generate()
+        with open(self.domain_file, "r") as f:
+            return f.read()
+        
+    def get_problem(self):
+        if not self.started:
+            raise ValueError("PDDLGenerator not started. Start PDDLGenerator before getting problem file.")
+        if self.overwritten_problem is not None:
+            return self.overwritten_problem
+        self.generate()
+        with open(self.problem_file, "r") as f:
+            return f.read()
+    
     def copy(self, other: "PddlGeneratorClass"):
         self.started = other.started
         #self.domain_file = other.domain_file
@@ -145,5 +184,26 @@ class PddlGeneratorClass:
         self.objects = other.objects
         self.init = other.init
         self.goal = other.goal
+        # Since the overwritten parts are new, older versions of the generator should not have them
+        self.overwritten_domain = other.overwritten_domain if hasattr(other, "overwritten_domain") else None
+        self.overwritten_problem = other.overwritten_problem if hasattr(other, "overwritten_problem") else None
+
+    def overwrite_domain(self, domain: str):
+        if not self.started:
+            raise ValueError("PDDLGenerator not started. Start PDDLGenerator before overwriting domain.")
+        self.overwritten_domain = domain.lower()
+    
+    def overwrite_problem(self, problem: str):
+        if not self.started:
+            raise ValueError("PDDLGenerator not started. Start PDDLGenerator before overwriting problem.")
+        self.overwritten_problem = problem.replace("AND","and").replace("OR","or")
+        
+    def single_action_domain(self, action: Action, predicates: list[Predicate]) -> str:
+        predicate_str = "\n".join([pred["clean"].replace(":", " ; ",1) for pred in predicates])
+        domain_str = self.generate_domain("SAD", self.types, predicate_str, [action])
+        sad_file = os.path.join(os.path.dirname(self.domain_file), "sad.pddl")
+        with open(sad_file, "w") as f:
+            f.write(domain_str)
+        return sad_file
     
 PddlGenerator = PddlGeneratorClass()

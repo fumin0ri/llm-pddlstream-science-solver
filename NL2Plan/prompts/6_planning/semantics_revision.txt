@@ -1,0 +1,1388 @@
+# Error
+The domain and problem are syntactically correct and can be parsed, however no plan can be found or the plan found is not semantically correct. Correct the domain and problem such that the problem can be solved.
+
+Remember that it's possible to also change the domain, and that the best and most correct solution likely is quite subtle. There are four most likely failure cases. Consider the likelihood and possible correction to each of these before providing the corrected domain:
+
+    1) A non-obvious mistake in a precondition which makes an action too limited. This could be in an action unrelated to the types that had predicates changed in the suggestion above, and if the plan doesn't make sense this is even likely. Explicitly restate and consider the precondition of each action here to see if anything appears to be flawed. At this point, also consider the types of the parameters and if they make sense. Any actions which aren't used in the correction plan, or aren't used as expected, are immediately suspect and should be considered in extra detail.
+    2) A discretely missing effect from some action. This could be in an action unrelated to the types that had predicates changed in the suggestion above, and if the plan doesn't make sense this is even likely. Explicitly restate and consider the effects of each action here to see if anything appears to be flawed. Any actions which aren't used in the correction plan, or aren't used as expected, are immediately suspect and should be considered in extra detail.
+    3) Something, possibly unclear but necessary, forgotten in the initialization or goal. Explicitly consider each grounded predicate in the initialization and the goal to see if they make sense. Additionally, explicitly restate and consider each lifted predicate and type to see if everything that should be included is included.
+    4) Something else. If none of the above three questions provide you with a good idea for fixing the issues, something else is the cause. At this point, openly consider any and all possible causes, what the correction plan avoids and something else you think might help. Summarize the previous errors before you consider this to see if it is needed. If you've not find any cause previously you MUST find something here. When you do this, ignore the previous results and reconsider everything. Anything could be flawed, even preconditions, effects or initializations you previously thought were right. When you get here, it's far more likely that the issues are in the domain file since problem file errors are easier to spot. As such, consider which actions that should be necessary the changes to initial state lets the planner avoid using, or makes it use incorrectly.
+
+Remember to consider these four questions in regards to the suggested solution above.
+
+Correct the problem and domain in such a way that it correctly models the task, but is solvable. Reply with corrected versions within a "# Domain" and a "# Problem" heading respectively. Before those, however, reason about the possible cause of the unsolvability and the best ways to correct them under the following "# Analysis" header.
+
+Make sure that the correction you apply still models the domain correctly. Action changes, new predicates, or changes to the initial state must be in line with the description. If your first analysis leads to behavior that diverges from this description, perform another analysis that attempts to correct both the core issue and the divergence. Avoid generating new actions if possible, that's almost always wrong.
+
+You can't change the plans found directly. The plans are found with an algorithm and are the shortest ones possible for the given combination of domain and problem. If there are any errors in the plan, such as unused actions or actions taken at the wrong times, you need to change the domain and problem to fix the underlying cause. If an action is unused, two likely explanations are that either its precondition is too strict or some other action is not checking for the unused action having been used.
+
+Since we got here there is guaranteed to be some issue, or several issues, with either the domain or the problem or both. As such, you must change at least one of these and attempt to correct the errors.
+
+Summarize the changes you make in a "# Changes" heading.
+
+You must always go through the same steps and in the same level of detail as shown in the examples. Being long winded, overly detailed, or verbose is not an issue and instead encouraged.
+
+# Examples
+## Example 1
+### To Model
+I've got a building with five floors and two elevators, and I want you to plan the elevator trips for Bob at floor 3 and Sally at floor 2 to both go to floor 5 in a climate-friendly way.
+
+### Domain
+```
+(define (domain elevator)
+    (:requirements
+        :strips :typing :equality :negative-preconditions :disjunctive-preconditions
+        :universal-preconditions :conditional-effects
+    )
+
+    (:types
+        elevator - object ; A vehicle able to move between floors.
+        floor - object ; The floor where elevators and people can be
+        person - object ; A person traveling in the building
+    )
+
+    (:predicates
+        (in ?p - person ?e - elevator) ; True if the person ?p is in the elevator ?e
+        (at ?o - object ?f - floor) ; True if the object ?o (an elevator or a person) is at floor ?f.
+    )
+
+    (:action enter
+        :parameters (
+            ?p - person
+            ?e - elevator
+            ?f - floor
+        )
+
+        :precondition (and
+            (at ?p ?f)
+            (at ?e ?f)
+        )
+
+        :effect (and
+            (not (at ?p ?f))
+            (in ?p ?e)
+        )
+    )
+
+    (:action exit
+        :parameters (
+            ?p - person
+            ?e - elevator
+            ?f - floor
+        )
+
+        :precondition (and
+            (in ?p ?e)
+            (at ?e ?f)
+        )
+
+        :effect (and
+            (not (in ?p ?e))
+            (at ?p ?f)
+        )
+    )
+
+    (:action drive
+        :parameters (
+            ?e - elevator
+            ?from - floor
+            ?to - floor
+        )
+
+        :precondition (and
+            (at ?e ?from)
+        )
+
+        :effect (and
+            (not (at ?e ?from))
+            (at ?e ?to)
+        )
+    )
+)
+```
+
+### Problem
+```
+(define
+    (problem elevator_problem)
+    (:domain elevator)
+
+    (:objects
+        bob - person ; One of the two people who should meet. His exact floor is unknown.
+        sally - person ; The other person who should meet. Her exact floor is unknown.
+        floor1 - floor ; The first floor
+        floor2 - floor ; The second floor
+        floor3 - floor ; The third floor
+        floor4 - floor ; The fourth floor
+        floor5 - floor ; The fifth floor
+        elevator1 - elevator ; The first elevator in the building.
+        elevator2 - elevator ; The second elevator in the building.
+    )
+
+    (:init
+        (at bob floor3)
+        (at sally floor2)
+        (at elevator1 floor1)
+        (at elevator2 floor1)
+    )
+
+    (:goal
+        (and ; all the following should be done
+            (at bob floor5) ; bob is on floor 5
+            (at sally floor5) ; sally is on floor 5
+            (at bob floor3) ; bob is on floor 3
+            (at sally floor2) ; sally is on floor 2
+        )
+    )
+)
+```
+
+### Correction Suggestion
+A possible way of solving the problem is to do the following:
+    - Adding '(in bob elevator1)' to the initial state.
+    - Adding '(in sally elevator1)' to the initial state.
+After which the following plan solves the task:
+    - drive elevator1 floor1 floor5
+    - exit bob elevator1 floor5
+    - exit sally elevator1 floor5
+
+However, this was found with a flawed algorithm that can only change the initialization and does not take the meaning of the task and domain into consideration. As such, it is probably better to modify the domain and/or problem in some other manner that actually correctly models the task. Instead, analyze why this correction actually helps and use this analysis to fix the problem.
+
+### Analysis
+#### Non-Obvious Mistake in a Precondition - Explicitly Restating and Considering each Action Precondition
+I will now consider if the cause could be a mistake in a precondition. To do this, I will restate each action precondition and analyze them for mistakes and in regards to the suggested plan.
+
+**enter**:
+    The precondition of **enter** is:
+        ```
+        :precondition (and
+            (at ?p ?f)
+            (at ?e ?f)
+        )
+        ```
+    Which entails checking the *person* and the *elevator* are at the same *floor*. This makes sense for an action about entering *elevator*:s. While this action isn't used in the correction plan, it doesn't seem like this is caused by an error in this precondition but instead by it being more efficient to start the people inside the *elevator* directly rather than entering with an action.
+
+**exit**:
+    The precondition of **exit** is:
+        ```
+        :precondition (and
+            (in ?p ?e)
+            (at ?e ?f)
+        )
+        ```
+    Which entails checking the *person* is in the *elevator* and the *elevator* is at the *floor* where the exiting happens. This makes sense for an action about exiting *elevator*:s, and this action is also used in a reasonable way in the correction plan.
+
+**drive**:
+    The precondition of **drive** is:
+        ```
+        :precondition (and
+            (at ?e ?from)
+        )
+        ```
+    Which entails checking the *elevator* is on the starting *floor*. This makes sense for an action about driving *elevator*:s, and this action is also used in a reasonable way in the correction plan.
+
+#### Non-Obvious Mistake in an Effect - Explicitly Restating and Considering each Action Effect
+I will now consider if the cause could be a mistake in an effect. To do this, I will restate each action effect and analyze them for mistakes and in regards to the suggested plan.
+
+**enter**:
+    The effect of **enter** is:
+        ```
+        :effect (and
+            (not (at ?p ?f))
+            (in ?p ?e)
+        )
+        ```
+    Which entails removing the *person* from the *floor* and placing them inside the *elevator* which makes perfect sense for an action about entering an *elevator*. While the **enter** action isn't used in the correction plan, this seems to be caused by it making for a shorter plan to place the people inside the *elevator* rather than to use the action.
+
+**exit**:
+    The effect of **exit** is:
+        ```
+        :effect (and
+            (not (in ?p ?e))
+            (at ?p ?f)
+        )
+        ```
+    Which entails removing the *person* from inside the *elevator* and placing them on the *floor* which seems correct for an action about exiting an *elevator*. This action is also used in a reasonable way within the correction plan, indicating that it likely is valid.
+
+**drive**:
+    The effect of **drive** is:
+        ```
+        :effect (and
+            (not (at ?e ?from))
+            (at ?e ?to)
+        )
+        ```
+    Which entails removing the *elevator* from the *floor* its traveling from and placing it on the *floor* it is traveling to which appears correct an action about driving an *elevator*. This action is also used in a reasonable way within the correction plan, indicating that it likely is valid.
+
+#### Non-Obvious Mistake in Initialization or Goal - Explicitly Restating and Considering each Grounded and Lifted Predicate
+I will now consider if the cause could be a mistake in the initialization or goal. To do this I will first iterate all grounded predicates in the initialization, then all lifted predicates and lastly the goal condition.
+
+Grounded predicates:
+    - `(at bob floor3)`: This entails `bob` starting at `floor3` which is correct according to the description.
+    - `(at sally floor2)`: This entails `sally` starting at `floor2` which is correct according to the description.
+    - `(at elevator1 floor1)`: This entails `sally` starting at `floor1`. The initial floor of `elevator1` is not specified in the description, but it being `floor1` is a reasonable guess so this makes sense.
+    - `(at elevator2 floor1)`: This entails `sally` starting at `floor2`. The initial floor of `elevator2` is not specified in the description, but it being `floor1` is a reasonable guess so this makes sense.
+
+Lifted predicates:
+    - `in`: `in` models a *person* being inside an *elevator*. This is initialized by the correction plan, but it seems like the reason for setting this is not that the *person* can't enter the *elevator* naturally, but instead that each *person* has to be in two places at once for the goal. So, as each *person* already starts somewhere this should not be chosen as the correction.
+    - `at`: `at` models an *elevator* or *person* being guarded at a *floor*. This is not set by the correction plan, and all *elevator*:s and *person*:s seem to be correctly initialized. So, we won't change this.
+
+Goal:
+    The goal reads:
+        ```
+        (:goal
+            (and ; all the following should be done
+                (at bob floor5) ; bob is on floor 5
+                (at sally floor5) ; sally is on floor 5
+                (at bob floor3) ; bob is on floor 3
+                (at sally floor2) ; sally is on floor 2
+            )
+        )
+        ```
+    Which entails checking that `bob` is at both `floor5` and `floor3` as well as `sally` being at both `floor5` and `floor2`. However, the description only states that we want Bob and Sally to meet at `floor5`, so it seems that the information about their initial state (at `floor3` and `floor2` respectively) accidentally has made its way into the goal. The current formulation requires that Bob and Sally are at two places at once, which is clearly impossible and is likely the cause of the correction plan setting `(in bob elevator1)` and `(in sally elevator1)` as to cause them to be at two places. So, to fix this we'll remove the requirements that Bob and Sally remain at `floor3` and `floor2`. This will have to be addressed!
+
+#### Summary of Errors
+I will now summarize all the flaws for myself before addressing them in the new domain and problem files.
+
+Precondition errors:
+    All action preconditions seemed correct, so we won't change these.
+
+Effect errors:
+    All action effects seemed correct, so we won't change these.
+
+Initialization and goal errors:
+    - `(at bob floor3)` must be removed from the goal, since it currently entails that `bob` is at two places at once and isn't required by the description
+    - `(at sally floor2)` must be removed from the goal, since it currently entails that `bob` is at two places at once and isn't required by the description
+
+#### Something Else
+We've found some good explanations and likely errors above. So, I will attempt those before I consider more broadly. However, had I not found a good cause for the errors I HAVE TO think broadly here to find some other explanation. In particular I'd consider what actions the plan manages to avoid through the initialization changes, and double check all of them in detail to see if any seem flawed.
+
+### Domain
+Even though there were no errors within the domain file, I still need to re-iterate and re-state the valid version.
+```
+(define (domain elevator)
+    (:requirements
+        :strips :typing :equality :negative-preconditions :disjunctive-preconditions
+        :universal-preconditions :conditional-effects
+    )
+
+    (:types
+        elevator - object ; A vehicle able to move between floors.
+        floor - object ; The floor where elevators and people can be
+        person - object ; A person traveling in the building
+    )
+
+    (:predicates
+        (in ?p - person ?e - elevator) ; True if the person ?p is in the elevator ?e
+        (at ?o - object ?f - floor) ; True if the object ?o (an elevator or a person) is at floor ?f.
+    )
+
+    (:action enter
+        :parameters (
+            ?p - person
+            ?e - elevator
+            ?f - floor
+        )
+
+        :precondition (and
+            (at ?p ?f)
+            (at ?e ?f)
+        )
+
+        :effect (and
+            (not (at ?p ?f))
+            (in ?p ?e)
+        )
+    )
+
+    (:action exit
+        :parameters (
+            ?p - person
+            ?e - elevator
+            ?f - floor
+        )
+
+        :precondition (and
+            (in ?p ?e)
+            (at ?e ?f)
+        )
+
+        :effect (and
+            (not (in ?p ?e))
+            (at ?p ?f)
+        )
+    )
+
+    (:action drive
+        :parameters (
+            ?e - elevator
+            ?from - floor
+            ?to - floor
+        )
+
+        :precondition (and
+            (at ?e ?from)
+        )
+
+        :effect (and
+            (not (at ?e ?from))
+            (at ?e ?to)
+        )
+    )
+)
+```
+
+### Problem
+I will now correct the errors found in the problem.
+```
+(define
+    (problem elevator_problem)
+    (:domain elevator)
+
+    (:objects
+        bob - person ; One of the two people who should meet. His exact floor is unknown.
+        sally - person ; The other person who should meet. Her exact floor is unknown.
+        floor1 - floor ; The first floor
+        floor2 - floor ; The second floor
+        floor3 - floor ; The third floor
+        floor4 - floor ; The fourth floor
+        floor5 - floor ; The fifth floor
+        elevator1 - elevator ; The first elevator in the building.
+        elevator2 - elevator ; The second elevator in the building.
+    )
+
+    (:init
+        (at bob floor3)
+        (at sally floor2)
+        (at elevator1 floor1)
+        (at elevator2 floor1)
+    )
+
+    (:goal
+        (and ; all the following should be done
+            (at bob floor5) ; bob is on floor 5
+            (at sally floor5) ; sally is on floor 5
+            ; Removed the goal for bob and sally to be on floor3 and floor2 respectively
+        )
+    )
+)
+```
+
+### Changes
+I performed the following changes:
+    - Removed `(at bob floor3)` and `(at sally floor2)` from the goal condition since it required them to be in two places at once
+
+## Example 2
+### To Model
+In this domain, the AI agent is a wildlife conservation management system. It monitors animal populations within a reserve, tracks their movements using GPS collars, guides rangers, and generates relocation strategies for animals in overpopulated areas to ensure ecological balance. Movement can occur only between neighboring locations, and animals can only be in habit locations. Rangers can also guard locations where they are.
+
+There are four habitats currently, one centered and three around it. The surrounding ones contain our deer. However, there have been poachers seen recently so I'd like to centralize all the deer and make sure that all the outer areas are protected by some of our rangers, which all start at the center location.
+
+### Domain
+```
+(define (domain wildlife)
+    (:requirements
+        :strips :typing :equality :negative-preconditions :disjunctive-preconditions
+        :universal-preconditions :conditional-effects
+    )
+
+    (:types
+        ranger - object ; A worker protecting the animals.
+        location - object ; Places which can be traveled between.
+        habitat - location ; Habitats are a type of location.
+        animal - object ; The animals living in the park.
+    )
+
+    (:predicates
+        (at ?o - object ?l - location) ; True if the object ?o (an animal or a ranger) is at the location ?l. Properties: MAXONCE(?o)
+        (guarded ?l - location) ; True if the location ?l is guarded by anyone.
+        (guarding ?r - ranger) ; True if the ranger ?r is guarding anything.
+        (neighboring ?l1 - location ?l2 - location) ; True if the location ?l1 is neighboring the location ?l2. Properties: SYMMETRICAL(?l1, ?l2)
+    )
+
+    (:action walk
+        :parameters (
+            ?r - ranger
+            ?l1 - location
+            ?l2 - location
+        )
+
+        :precondition (and
+            (at ?r ?l1)
+            (neighboring ?l1 ?l2)
+            (not (guarding ?r))
+        )
+
+        :effect (and
+            (not (at ?r ?l1))
+            (at ?r ?l2)
+        )
+    )
+
+    (:action move_animal
+        :parameters (
+            ?r - ranger
+            ?a - animal
+            ?h1 - habitat
+            ?h2 - habitat
+        )
+
+        :precondition (and
+            (at ?r ?h1)
+            (at ?a ?h1)
+            (neighboring ?h1 ?h2)
+            (not (guarding ?r))
+        )
+
+        :effect (and
+            (not (at ?r ?h1))
+            (not (at ?a ?h1))
+            (at ?a ?h2)
+            (at ?r ?h2)
+        )
+    )
+
+    (:action guard
+        :parameters (
+            ?r - ranger
+            ?l - location
+        )
+
+        :precondition (and
+            (at ?r ?l)
+            (not (guarded ?l))
+        )
+
+        :effect (and
+            (guarding ?r)
+            (guarded ?l)
+        )
+    )
+
+    (:action unguard
+        :parameters (
+            ?r - ranger
+            ?l - location
+        )
+
+        :precondition (and
+            (at ?r ?l)
+            (guarding ?r)
+        )
+
+        :effect (and
+            (not (guarding ?r))
+            (not (guarded ?l))
+        )
+    )
+)
+```
+
+### Problem
+```
+(define
+    (problem wildlife_problem)
+    (:domain wildlife)
+
+    (:objects
+        outer1 - habitat ; The first outer habitat
+        outer2 - habitat ; The second outer habitat
+        outer3 - habitat ; The third outer habitat
+        center - habitat ; The central habitat where the ranger currently is
+        deer1 - animal ; The animal living in outer1
+        deer2 - animal ; The animal living in outer2
+        deer3 - animal ; The animal living in outer3
+        ranger1 - ranger ; One of the available rangers
+        ranger2 - ranger ; One of the available rangers
+    )
+
+    (:init
+        (at deer1 outer1)
+        (at deer2 outer2)
+        (at ranger1 center)
+        (at ranger2 center)
+        (guarded center)
+        (neighboring outer1 center)
+        (neighboring outer2 center)
+        (neighboring outer3 center)
+    )
+
+    (:goal
+        (and ; all the following should be done
+            (and ; all the deer should be centered
+                (at deer1 center) ; deer1 is at center
+                (at deer2 center) ; deer2 is at center
+                (at deer3 center) ; deer3 is at center
+            )
+            (and ; all the outer locations should be protected
+                (guarded outer1) ; outer1 is protected
+                (guarded outer2) ; outer2 is protected
+                (guarded outer3) ; outer3 is protected
+            )
+        )
+    )
+)
+```
+
+### Correction Suggestion
+A possible way of solving the problem is to do the following:
+    - Add '(at deer3 center)' to the initial state.
+    - Add '(guarded outer1)' to the initial state.
+    - Add '(neighboring center outer1)' to the initial state.
+    - Add '(neighboring center outer2)' to the initial state.
+    - Add '(neighboring center outer3)' to the initial state.
+After which the following plan solves the task:
+    - walk ranger1 center outer1
+    - move_animal ranger1 deer1 outer1 center
+    - walk ranger1 center outer2
+    - move_animal ranger1 deer2 outer2 center
+    - walk ranger1 center outer2
+    - guard ranger1 outer2
+    - walk ranger2 center outer3
+    - guard ranger2 outer3
+
+However, this was found with a flawed algorithm that can only change the initialization and does not take the meaning of the task and domain into consideration. As such, it is probably better to modify the domain and/or problem in some other manner that actually correctly models the task. Instead, analyze why this correction actually helps and use this analysis to fix the problem.
+
+### Analysis
+#### Non-Obvious Mistake in a Precondition - Explicitly Restating and Considering each Action Precondition
+I will now consider if the cause could be a mistake in a precondition. To do this, I will restate each action precondition and analyze them for mistakes and in regards to the suggested plan.
+
+**walk**:
+    The precondition of **walk** is:
+        ```
+        :precondition (and
+            (at ?r ?l1)
+            (neighboring ?l1 ?l2)
+            (not (guarding ?r))
+        )
+        ```
+    Which entails checking that the *ranger* is at the starting *location*, that the destination *location* is `neighboring` to the target *location* and that the ranger is not occupied guarding a location. While this initially seems right, and the action is used, it's only checking one direction of `neighboring` while `neighboring` is a `SYMMETRICAL` predicate. This is wrong and both directions should be checked. This is also the reason for why the correction plan requires setting '(neighboring center outerX)' for all `outer` locations, if this is not set the *ranger* can't walk away from `center`. So, this will have to be addressed!
+
+**move_animal**:
+    The precondition of **move_animal** is:
+        ```
+        :precondition (and
+            (at ?r ?h1)
+            (at ?a ?h1)
+            (neighboring ?h1 ?h2)
+            (not (guarding ?r))
+        )
+        ```
+    Which entails checking that the *ranger* and *animal* both are at the starting *habitat*, that the destination *habitat* is neighboring with the destination *habitat* as well as the *ranger* not being occupied guarding. Just like in the **walk** action, this must check both directions of `neighboring`. While this is not an issue for the current plan, *animal*:s are only moved back to the `center`, in the direction defined, this is still a correction which should be made. So, this will have to be addressed!
+
+**guard**:
+    The precondition of **guard** is:
+        ```
+        :precondition (and
+            (at ?r ?l)
+            (not (guarded ?l))
+        )
+        ```
+    Which entails checking that the *ranger* is at the *location* to guard and that the *location* is not already guarded. This makes sense, and the **guard** action is used in a seemingly correct way in the correction plan which further supports this being correct.
+
+**unguard**:
+    The precondition of **unguard** is:
+        ```
+        :precondition (and
+            (at ?r ?l)
+            (guarding ?r)
+        )
+        ```
+    Which entails checking that the *ranger* is at the *location* to unguard and that the *ranger* is guarding something. Together with the **guard** action guaranteeing that only one ranger can guard a single *location* at a time, this is sufficent to guarantee that this is the *ranger* guarding the *location*. While the **unguard** action is never used in the correction plan, this is likely due to it never being necessary to stop guarding a *location* in the current problem rather than an issue with the action precondition.
+
+#### Non-Obvious Mistake in an Effect - Explicitly Restating and Considering each Action Effect
+I will now consider if the cause could be a mistake in an effect. To do this, I will restate each action effect and analyze them for mistakes and in regards to the suggested plan.
+
+**walk**:
+    The effect of **walk** is:
+        ```
+        :effect (and
+            (not (at ?r ?l1))
+            (at ?r ?l2)
+        )
+        ```
+    Which entails making the *ranger* no longer being at the starting *location* and instead being at the destination *location*. This makes sense for an action about moving between locations. This action is also used in the correction plan, and is done so in a reasonable way, which further increases the likelihood it is right.
+
+**move_animal**:
+    The effect of **move_animal** is:
+        ```
+        :effect (and
+            (not (at ?r ?h1))
+            (not (at ?a ?h1))
+            (at ?a ?h2)
+            (at ?r ?h2)
+        )
+        ```
+    Which entails making the *ranger* and *animal* both no longer being at the starting *habitat* and instead being at the destination *habitat*. This makes sense for an action about moving between habitats. The action is also seemingly used in a correct way in the correction plan, which makes it more likely to be correct.
+
+**guard**:
+    The effect of **guard** is:
+        ```
+        :effect (and
+            (guarding ?r)
+            (guarded ?l)
+        )
+        ```
+    Which entails making the *ranger* guarding and the *location* guarded. This makes sense for an action about starting to guard a location. The action is also seemingly used in a correct way in the correction plan, which makes it more likely to be correct.
+
+**unguard**:
+    The effect of **unguard** is:
+        ```
+        :effect (and
+            (not (guarding ?r))
+            (not (guarded ?l))
+        )
+        ```
+    Which entails making the *ranger* to be no longer guarding and the *location* no longer guarded. This makes sense for an action about stopping to guard a location. While the action is never used in the correction plan, this seems to be because there is no need to stop guarding a location rather than due to a flaw in the action.
+
+#### Non-Obvious Mistake in Initialization or Goal - Explicitly Restating and Considering each Grounded and Lifted Predicate
+I will now consider if the cause could be a mistake in the initialization or goal. To do this I will first iterate all grounded predicates in the initialization, then all lifted predicates and lastly the goal condition.
+
+Grounded predicates:
+    - `(at deer1 outer1)`: This entails `deer1` starting at `outer1`. This makes sense.
+    - `(at deer2 outer2)`: This entails `deer2` starting at `outer2`. This makes sense.
+    - `(at ranger1 center)`: This means that `ranger1` starts at `center`. This makes sense.
+    - `(at ranger2 center)`: This means that `ranger1` starts at `center`. This makes sense.
+    - `(guarded center)`: This means that `center` starts guarded. However, there is no *ranger* set to guard `center`, and there is nothing indicating that the `center` location should start guarded. So, this should not start true. This must be addressed!
+    - `(neighboring outer1 center)`: This means that `center` is next to `outer1` which makes sense.
+    - `(neighboring outer2 center)`: This means that `center` is next to `outer2` which makes sense.
+    - `(neighboring outer3 center)`: This means that `center` is next to `outer3` which makes sense.
+
+Lifted predicates:
+    - `at`: `at` models where an *animal* or *ranger* is. This is set by the correction plan which sets the location of `deer3` to being at `center`. This indicates that something is probably wrong with it. The issue seems to be that `deer3` is not given any starting position at all! While the correction plan suggests placing it at the `center` location, this doesn't fit with the description. Instead, it makes more sense for `deer3` to start at `outer3` which has no initial *deer*. This will have to be addressed!
+    - `guarded`: `guarded` models a *location* being guarded by any *ranger*. This is set by the correction plan, so seemingly this is wrong somehow. Initially marking any *location* is wrong based on the description to model however, so we can't do that. Instead, the reason seems to be that each *ranger* can only guard one *location* and we only have two *ranger*:s and three *location*:s to guard. So, to solve this issue correctly we need to add another *ranger*. This *ranger* must also be initialized with a location correctly, likely to `center` with the other rangers. This will have to be addressed!
+    - `guarding`: `guarding` models a *ranger* guarding any *location*. This is not changed by the correction plan, and nothing in the domain description suggests that this should start true. So, this is likely correctly initialized.
+    - `neighboring`: `neighboring` models two *location*:s being neighboring, and this is changed by the correction plan. As this is a `SYMMETRICAL` predicate it should be set in both directions, and it is only initialized in one direction. While this can also be addressed as detailed above by changing **walk** and **move_animal** it is better to do both. So, this will have to be addressed!
+
+Goal:
+    The goal reads:
+        ```
+        (:goal (and ; all the following should be done
+            (and ; all the deer should be centered
+                (at deer1 center) ; deer1 is at center
+                (at deer2 center) ; deer2 is at center
+                (at deer3 center) ; deer3 is at center
+            )
+            (and ; all the outer locations should be protected
+                (guarded outer1) ; outer1 is protected
+                (guarded outer2) ; outer2 is protected
+                (guarded outer3) ; outer3 is protected
+            )
+        ))
+        ```
+    Which entails checking that all the *deer* are at the center and all the outer *locations* are guarded. This is correct based on the domain description and makes sense.
+
+#### Summary of Errors
+I will now summarize all the flaws for myself before addressing them in the new domain and problem files.
+
+Precondition errors:
+    - The precondition of the **walk** and **move_animal** actions need to check `neighboring` in both directions.
+
+Effect errors:
+    All action effects seemed correct, so we won't change these.
+
+Initialization and goal errors:
+    - `(guarded center)` should not be initialized and must be removed.
+    - `deer3` must start at `outer3`. For this we'll add `(at deer3 outer3)
+    - A new *ranger*, `ranger3`, must be added. This will be initalized with `(at ranger3 center)`.
+
+#### Something Else
+The above explanations seem sufficent to probably fix the domain. For this reason I won't consider anything else, but if I hadn't found good fixes already I would HAVE TO think abstractly and critically now to find a reasonable explanation as to why. In particular I'd consider what actions the plan manages to avoid through the initialization changes, and double check all of them in detail to see if any seem flawed.
+
+### Domain
+I will now correct the errors found in the domain.
+```
+(define (domain wildlife)
+    (:requirements
+        :strips :typing :equality :negative-preconditions :disjunctive-preconditions
+        :universal-preconditions :conditional-effects
+    )
+
+    (:types
+        ranger - object ; A worker protecting the animals.
+        location - object ; Places which can be traveled between.
+        habitat - location ; Habitats are a type of location.
+        animal - object ; The animals living in the park.
+    )
+
+    (:predicates
+        (at ?o - object ?l - location) ; True if the object ?o (an animal or a ranger) is at the location ?l. Properties: MAXONCE(?o)
+        (guarded ?l - location) ; True if the location ?l is guarded by anyone.
+        (guarding ?r - ranger) ; True if the ranger ?r is guarding anything.
+        (neighboring ?l1 - location ?l2 - location) ; True if the location ?l1 is neighboring the location ?l2. Properties: SYMMETRICAL(?l1, ?l2)
+    )
+
+    (:action walk
+        :parameters (
+            ?r - ranger
+            ?l1 - location
+            ?l2 - location
+        )
+
+        :precondition (and
+            (at ?r ?l1)
+            (or ; we check both directions of neighboring
+                (neighboring ?l1 ?l2)
+                (neighboring ?l2 ?l1)
+            )
+            (not (guarding ?r))
+        )
+
+        :effect (and
+            (not (at ?r ?l1))
+            (at ?r ?l2)
+        )
+    )
+
+    (:action move_animal
+        :parameters (
+            ?r - ranger
+            ?a - animal
+            ?h1 - habitat
+            ?h2 - habitat
+        )
+
+        :precondition (and
+            (at ?r ?h1)
+            (at ?a ?h1)
+            (or ; we check both directions of neighboring
+                (neighboring ?l1 ?l2)
+                (neighboring ?l2 ?l1)
+            )
+            (not (guarding ?r))
+        )
+
+        :effect (and
+            (not (at ?r ?h1))
+            (not (at ?a ?h1))
+            (at ?a ?h2)
+            (at ?r ?h2)
+        )
+    )
+
+    (:action guard
+        :parameters (
+            ?r - ranger
+            ?l - location
+        )
+
+        :precondition (and
+            (at ?r ?l)
+            (not (guarded ?l))
+        )
+
+        :effect (and
+            (guarding ?r)
+            (guarded ?l)
+        )
+    )
+
+    (:action unguard
+        :parameters (
+            ?r - ranger
+            ?l - location
+        )
+
+        :precondition (and
+            (at ?r ?l)
+            (guarding ?r)
+        )
+
+        :effect (and
+            (not (guarding ?r))
+            (not (guarded ?l))
+        )
+    )
+)
+```
+
+### Problem
+I will now correct the errors found in the problem.
+```
+(define
+    (problem wildlife_problem)
+    (:domain wildlife)
+
+    (:objects
+        outer1 - habitat ; The first outer habitat
+        outer2 - habitat ; The second outer habitat
+        outer3 - habitat ; The third outer habitat
+        center - habitat ; The central habitat where the ranger currently is
+        deer1 - animal ; The animal living in outer1
+        deer2 - animal ; The animal living in outer2
+        deer3 - animal ; The animal living in outer3
+        ranger1 - ranger ; One of the available rangers
+        ranger2 - ranger ; One of the available rangers
+        ranger3 - ranger ; The newly added ranger
+    )
+
+    (:init
+        (at deer1 outer1)
+        (at deer2 outer2)
+        (at deer3 outer3) ; We define where deer3 starts
+        (at ranger1 center)
+        (at ranger2 center)
+        (at ranger3 center) ; We define where ranger3 starts
+        ; Removed that the center started guarded
+        (neighboring outer1 center)
+        (neighboring outer2 center)
+        (neighboring outer3 center)
+        (neighboring center outer1) ; We add a definition of neighboring in the other direction
+        (neighboring center outer2) ; We add a definition of neighboring in the other direction
+        (neighboring center outer3) ; We add a definition of neighboring in the other direction
+    )
+
+    (:goal
+        (and ; all the following should be done
+            (and ; all the deer should be centered
+                (at deer1 center) ; deer1 is at center
+                (at deer2 center) ; deer2 is at center
+                (at deer3 center) ; deer3 is at center
+            )
+            (and ; all the outer locations should be protected
+                (guarded outer1) ; outer1 is protected
+                (guarded outer2) ; outer2 is protected
+                (guarded outer3) ; outer3 is protected
+            )
+        )
+    )
+)
+```
+
+### Changes
+I performed the following changes:
+    - Updated the **walk** and **move_animal** preconditions to check both directions of `neighboring`.
+    - Defined that `deer3` starts at `outer3`
+    - Removed the grounded predicates which stated that `center` was already guarded.
+    - Added a new **ranger**, `ranger3`, who starts at `center.
+
+## Example 3
+### To Model
+The AI agent is here a scheduling system for a house construction company with workers who can build things and vehicles to transport the workers within cities. Houses are modeled as having walls and roofs which have to be built in this order. Building anything consumes the worker. All locations are connected and as such vehicles can move wherever.
+
+Currently, there are a couple of trucks at the Chicago depot and we're trying to build three houses in the area. We've got 7 workers available for construction work.
+
+### Domain
+```
+(define (domain construction)
+    (:requirements
+        :strips :typing :equality :negative-preconditions :disjunctive-preconditions
+        :universal-preconditions :conditional-effects
+    )
+
+    (:types
+        location - object ; Types of locations that can be visited by the workers.
+        house - location ; Types of buildings that can be constructed.
+        worker - object ; Types of workers that can work on the construction.
+        vehicle - object ; Types of vehicles that can be used by the workers
+    )
+
+    (:predicates
+        (at ?o - object ?l - location) ; True if the object ?o (a worker or vehicle) is at the location ?l. MAXONCE(?o)
+        (in ?w - worker ?v - vehicle) ; True if the worker ?w is inside the vehicle ?v.
+        (walls_built ?h - house) ; True if the walls of the house ?h have been built.
+        (roof_built ?h - house) ; True if the roof of the house ?h has been built.
+    )
+
+    (:action get_in
+        :parameters (
+            ?w - worker
+            ?v - vehicle
+            ?l - location
+        )
+
+        :precondition (and
+            (at ?w ?l)
+            (at ?v ?l)
+            (in ?w ?v)
+        )
+
+        :effect (and
+            (not (at ?w ?l))
+            (in ?w ?v)
+        )
+    )
+
+    (:action get_out
+        :parameters (
+            ?w - worker
+            ?v - vehicle
+            ?l - location
+        )
+
+        :precondition (and
+            (at ?v ?l)
+            (in ?w ?v)
+        )
+
+        :effect (and
+            (not (in ?w ?v))
+        )
+    )
+
+    (:action drive
+        :parameters (
+            ?v - vehicle
+            ?from - location
+            ?to - location
+        )
+
+        :precondition (and
+            (at ?v ?from)
+            (not (= ?to ?from))
+        )
+
+        :effect (and
+            (not (at ?v ?from))
+            (at ?v ?to)
+        )
+    )
+
+    (:action build_wall
+        :parameters (
+            ?w - worker
+            ?h - house
+        )
+
+        :precondition (and
+            (at ?w ?h)
+            (not (walls_built ?h))
+            (not (consumed ?w))
+        )
+
+        :effect (and
+            (walls_built ?h)
+            (consumed ?w)
+        )
+    )
+
+    (:action build_roof
+        :parameters (
+            ?w - worker
+            ?h - house
+        )
+
+        :precondition (and
+            (at ?w ?h)
+            (not (roof_built ?h))
+            (not (consumed ?w))
+        )
+
+        :effect (and
+            (roof_built ?h)
+            (consumed ?w)
+        )
+    )
+)
+```
+
+### Problem
+```
+(define
+    (problem construction_problem)
+    (:domain construction)
+
+    (:objects
+        truck1 - vehicle ; The first truck
+        truck2 - vehicle ; The second truck
+        w1 - worker ; The first worker
+        w2 - worker ; The second worker
+        w3 - worker ; The third worker
+        w4 - worker ; The fourth worker
+        w5 - worker ; The fifth worker
+        w6 - worker ; The sixth worker
+        w7 - worker ; The seventh worker
+        house1 - house ; The first house to build
+        house2 - house ; The second house to build
+        house3 - house ; The third house to build
+        depot - location ; The depot were things start
+    )
+
+    (:init
+        (at truck1 depot) ; The trucks start at the depot
+        (at truck2 depot) ; The trucks start at the depot
+        (walls_built house1) ; The walls of house1 are built already
+    )
+
+    (:goal
+        (and
+            (walls_built house1)
+            (roof_built house1)
+            (walls_built house2)
+            (roof_built house2)
+            (walls_built house3)
+            (roof_built house3)
+        )
+    )
+)
+```
+
+### Correction Suggestion
+A possible way of solving the problem is to do the following:
+    - Add '(at w1 house1)' to the initial state.
+    - Add '(at w2 house2)' to the initial state.
+    - Add '(at w3 house2)' to the initial state.
+    - Add '(at w4 house3)' to the initial state.
+    - Add '(at w5 house3)' to the initial state.
+After which the following plan solves the task:
+    - build_roof w1 house1
+    - build_roof w2 house2
+    - build_wall w3 house2
+    - build_wall w4 house3
+    - build_roof w5 house3
+
+However, this was found with a flawed algorithm that can only change the initialization and does not take the meaning of the task and domain into consideration. As such, it is probably better to modify the domain and/or problem in some other manner that actually correctly models the task. Instead, analyze why this correction actually helps and use this analysis to fix the problem.
+
+### Analysis
+#### Non-Obvious Mistake in a Precondition - Explicitly Restating and Considering each Action Precondition
+I will now consider if the cause could be a mistake in a precondition. To do this, I will restate each action precondition and analyze them for mistakes and in regards to the suggested plan.
+
+**get_in**:
+    The precondition of **get_in** is:
+        ```
+        :precondition (and
+            (at ?w ?l)
+            (at ?v ?l)
+            (in ?w ?v)
+        )
+        ```
+    Which entails checking that the *worker* is at the *location*, the *vehicle* is at the *location*, and the *worker* is in the *vehicle*. This seems wrong, since checking that the *worker* is already inside the *vehicle* before being able to get in is likely incorrect. This would mean that a *worker* can never enter a *vehicle*, which could be a part of the issues in the domain. We see that the correction avoids entering *vehicle*:s and instead directly places the *worker*:s at the location, so this is likely an error in the domain. This will have to be addressed!
+
+**get_out**:
+    The precondition of **get_out** is:
+        ```
+        :precondition (and
+            (at ?v ?l)
+            (in ?w ?v)
+        )
+        ```
+    Which entails checking that the *vehicle* is at the *location* and that the worker is in the *vehicle*. This makes sense to check for an action to exit a *vehicle*. While the **get_out** action is never used in the correction plan, this is more likely to be caused by the workers never being able to enter the *vehicle*:s with **get_in** and therefore not being able to exit.
+
+**drive**:
+    The precondition of **drive** is:
+        ```
+        :precondition (and
+            (at ?v ?from)
+            (not (= ?to ?from))
+        )
+        ```
+    Which entails checking that the *vehicle* is at the starting *location* and that the start and end *location*:s are different. This makes sense for an action about driving a *vehicle* between two *location*:s. While **drive** is never used in the correction plan, this is likely caused by workers not being able to enter *vehicle*:s rather than with an issue in **drive**.
+
+**build_wall**:
+    The precondition of **build_wall** is:
+        ```
+        :precondition (and
+            (at ?w ?h)
+            (not (walls_built ?h))
+            (not (consumed ?w))
+        )
+        ```
+    Which entails checking that the *worker* is at the *house*, that the walls are not already built, and that the *worker* has not already been used. This makes sense for an action about building a wall. This action is also used in an expected manner in the correction plan, which further increases the likelihood of this being correct.
+
+**build_roof**:
+    The precondition of **build_wall** is:
+        ```
+        :precondition (and
+            (at ?w ?h)
+            (not (roof_built ?h))
+            (not (consumed ?w))
+        )
+        ```
+    Which entails checking that the *worker* is at the *house*, that the roof is not already built, and that the *worker* has not already been used. This makes sense for an action about building a wall. However, the domain description to model says "Houses are modeled as having walls and roofs which have to be built in this order", and the action does not check that the walls have been built already. This can further be seen in the correction plan by the roof being built before the walls for *house2*. While this might not make the model unsolvable, it is incorrect and must be corrected for the found plan to actually be valid. This will have to be addressed!
+
+#### Non-Obvious Mistake in an Effect - Explicitly Restating and Considering each Action Effect
+I will now consider if the cause could be a mistake in an effect. To do this, I will restate each action effect and analyze them for mistakes and in regards to the suggested plan.
+
+**get_in**:
+    The effect of **get_in** is:
+        ```
+        :effect (and
+            (not (at ?w ?l))
+            (in ?w ?v)
+        )
+        ```
+    Which entails making the *worker* no longer being at the *location* and instead being inside the *vehicle*. This makes sense for an action about entering a *vehicle*. While the **get_in** action is never used in the correction plan, this is more likely to be caused by the precondition of **get_in** being overly strict than the effects lacking anything.
+
+**get_out**:
+    The effect of **get_out** is:
+        ```
+        :effect (and
+            (not (in ?w ?v))
+        )
+        ```
+    Which entails making the *worker* no longer being inside the *vehicle*. This is not sufficient for an action about exiting a *vehicle*, since the *location* of the *worker* is lost. As such, this action doesn't actually do anything meaningful. Additionally, the **get_out** action is never used in the correction plan. While this is likely partially caused by the **get_in** action not being applicable due to a flawed precondition, this mistake likely contributes as well. This will have to be addressed!
+
+**drive**:
+    The effect of **drive** is:
+        ```
+        :effect (and
+            (not (at ?v ?from))
+            (at ?v ?to)
+        )
+        ```
+    Which entails making the *vehicle* no longer being at the starting *location* and instead being at the ending *location*. This makes sense for an action about driving a *vehicle*. While **drive** is not used in the correction plan, this is likely caused by *worker*:s being unable to enter *vehicle*:s due to a flaw in the **get_in** action.
+
+**build_wall**:
+    The effect of **build_wall** is:
+        ```
+        :effect (and
+            (walls_built ?h)
+            (consumed ?w)
+        )
+        ```
+    Which entails making the walls being built and the *worker* consumed. This makes sense for an action about building a wall with a single use *worker*. Additionally, **build_wall** is used in the correction plan which further supports the action effects being correct.
+
+**build_roof**:
+    The effect of **build_wall** is:
+        ```
+        :effect (and
+            (roof_built ?h)
+            (consumed ?w)
+        )
+        ```
+    Which entails making the roof being built and the worker consumed. This makes sense for an action about building a wall with a single use worker. Additionally, **build_wall** is used in the correction plan which further supports the action effects being correct.
+
+#### Non-Obvious Mistake in Initialization or Goal - Explicitly Restating and Considering each Grounded and Lifted Predicate
+I will now consider if the cause could be a mistake in the initialization or goal. To do this I will first iterate all grounded predicates in the initialization, then all lifted predicates and lastly the goal condition.
+
+Grounded predicates:
+    - `(at truck1 depot)`: This entails *truck1* being at *depot* to start with. This makes sense.
+    - `(at truck2 depot)`: This entails *truck2* being at *depot* to start with. This makes sense.
+    - `(walls_built house1)`: This entails the walls of *house1* starting built. This does not make sense for the task to model, as it never states that any wall is prebuilt. As such, this should be removed. This will have to be addressed!
+
+Lifted predicates:
+    - `at`: `at` models where a *worker* or *vehicle* are. This is set by the correction plan which sets the location of several *worker*:s at being at various *house*:s, and as such there is likely some mistake in this. The error seems to be that no worker initially starts anywhere. While the correction plan suggests placing the *worker*:s at various *house*:s, this doesn't make sense based on the domain to model which doesn't state that the *worker*:s start at *house*:s. This poor suggestion is caused by the algorithm which found the correction plan not being aware of semantics. Instead, the *worker*:s should all start at `depot` along with the *vehicle*:s. This will have to be addressed!
+    - `in`: `in` models a *worker* being inside a *vehicle*. This is not changed by the correction plan, and nothing in the domain description suggests that this should start true. So, this is likely correctly initialized.
+    - `walls_built`: `walls_built` models the walls being built at a *house*. This is not changed by the correction plan, and nothing in the domain description suggests that this should start true. So, this is likely correctly initialized.
+    - `roof_built`: `roof_built` models the roof being built at a *house*. This is not changed by the correction plan, and nothing in the domain description suggests that this should start true. So, this is likely correctly initialized.
+
+Goal:
+    The goal reads:
+        ```
+        (:goal
+            (and
+                (walls_built house1)
+                (roof_built house1)
+                (walls_built house2)
+                (roof_built house2)
+                (walls_built house3)
+                (roof_built house3)
+            )
+        )
+        ```
+    Which entails checking that the walls and roofs are built at all *house*:s. This makes sense and is correct based on the domain description requesting that "we're trying to build three houses" and a house is fully built when it has both walls and a roof.
+
+#### Summary of Errors
+I will now summarize all the flaws for myself before addressing them in the new domain and problem files.
+
+Precondition errors:
+    - The precondition of the **get_in** action is overly strict. I must remove `(in ?w ?v)` from it.
+    - The precondition of the **build_roof** action is overly lax. I must add `(walls_built ?h)` to it.
+
+Effect errors:
+    - The effect of the **get_out** action is not performing enough. I must add `(at ?w ?l)` to it.
+
+Initialization and goal errors:
+    - The `(walls_built house1)` predicate should not be initialized and must be removed.
+    - Each worker must start at the depot. This entails adding all of the following:
+        - `(at w1 depot)`
+        - `(at w2 depot)`
+        - `(at w3 depot)`
+        - `(at w4 depot)`
+        - `(at w5 depot)`
+        - `(at w6 depot)`
+        - `(at w7 depot)`
+
+#### Something Else
+I've identified several possible errors above. It's most likely these making the domain unsolvable, so I won't consider anything else here. Had there been no good fixes found previously though, then I would HAVE TO think outside the box here until I find something that might fix it. In particular I'd consider what actions the plan manages to avoid through the initialization changes, and double check all of them in detail to see if any seem flawed.
+
+### Domain
+I will now correct the errors found in the domain.
+```
+(define (domain construction)
+    (:requirements
+        :strips :typing :equality :negative-preconditions :disjunctive-preconditions
+        :universal-preconditions :conditional-effects
+    )
+
+    (:types
+        location - object ; Types of locations that can be visited by the workers.
+        house - location ; Types of buildings that can be constructed.
+        worker - object ; Types of workers that can work on the construction.
+        vehicle - object ; Types of vehicles that can be used by the workers
+    )
+
+    (:predicates
+        (at ?o - object ?l - location) ; True if the object ?o (a worker or vehicle) is at the location ?l. MAXONCE(?o)
+        (in ?w - worker ?v - vehicle) ; True if the worker ?w is inside the vehicle ?v.
+        (walls_built ?h - house) ; True if the walls of the house ?h have been built.
+        (roof_built ?h - house) ; True if the roof of the house ?h has been built.
+    )
+
+    (:action get_in
+        :parameters (
+            ?w - worker
+            ?v - vehicle
+            ?l - location
+        )
+
+        :precondition (and
+            (at ?w ?l)
+            (at ?v ?l)
+        )
+
+        :effect (and
+            (not (at ?w ?l))
+            (in ?w ?v)
+        )
+    )
+
+    (:action get_out
+        :parameters (
+            ?w - worker
+            ?v - vehicle
+            ?l - location
+        )
+
+        :precondition (and
+            (at ?v ?l)
+            (in ?w ?v)
+        )
+
+        :effect (and
+            (not (in ?w ?v))
+            (at ?w ?l)
+        )
+    )
+
+    (:action drive
+        :parameters (
+            ?v - vehicle
+            ?from - location
+            ?to - location
+        )
+
+        :precondition (and
+            (at ?v ?from)
+            (not (= ?to ?from))
+        )
+
+        :effect (and
+            (not (at ?v ?from))
+            (at ?v ?to)
+        )
+    )
+
+    (:action build_wall
+        :parameters (
+            ?w - worker
+            ?h - house
+        )
+
+        :precondition (and
+            (at ?w ?h)
+            (not (walls_built ?h))
+            (not (consumed ?w))
+        )
+
+        :effect (and
+            (walls_built ?h)
+            (consumed ?w)
+        )
+    )
+
+    (:action build_roof
+        :parameters (
+            ?w - worker
+            ?h - house
+        )
+
+        :precondition (and
+            (at ?w ?h)
+            (not (roof_built ?h))
+            (not (consumed ?w))
+        )
+
+        :effect (and
+            (roof_built ?h)
+            (consumed ?w)
+        )
+    )
+)
+```
+
+### Problem
+I will now correct the errors found in the problem.
+```
+(define
+    (problem construction_problem)
+    (:domain construction)
+
+    (:objects
+        truck1 - vehicle ; The first truck
+        truck2 - vehicle ; The second truck
+        w1 - worker ; The first worker
+        w2 - worker ; The second worker
+        w3 - worker ; The third worker
+        w4 - worker ; The fourth worker
+        w5 - worker ; The fifth worker
+        w6 - worker ; The sixth worker
+        w7 - worker ; The seventh worker
+        house1 - house ; The first house to build
+        house2 - house ; The second house to build
+        house3 - house ; The third house to build
+        depot - location ; The depot were things start
+    )
+
+    (:init
+        (at truck1 depot) ; The trucks start at the depot
+        (at truck2 depot) ; The trucks start at the depot
+        (at w1 depot) ; Worker 1 starts at the depot
+        (at w2 depot) ; Worker 1 starts at the depot
+        (at w3 depot) ; Worker 1 starts at the depot
+        (at w4 depot) ; Worker 1 starts at the depot
+        (at w5 depot) ; Worker 1 starts at the depot
+        (at w6 depot) ; Worker 1 starts at the depot
+        (at w7 depot) ; Worker 1 starts at the depot
+    )
+
+    (:goal
+        (and
+            (walls_built house1)
+            (roof_built house1)
+            (walls_built house2)
+            (roof_built house2)
+            (walls_built house3)
+            (roof_built house3)
+        )
+    )
+)
+```
+
+### Changes
+I performed the following changes:
+    - Updated the **get_in** precondition to not require the *worker* to already be in the *vehicle*.
+    - Updated the **build_roof** precondition to also require that the walls are already built.
+    - Updated the **get_out** effect to place the *worker* at the location.
+    - Removed the grounded predicates which stated that the walls of `house1` were already built.
+    - Added grounded predicates which state that the *worker*:s all start at `depot`
+
+# Domain
+```
+{domain}
+```
+
+# Problem
+```
+{problem}
+```
+
+# History
+Previously, the following changes have been performed to correct the domain:
+{semantic_history}
+As such, you should not attempt these same changes again. Instead, you need to find some other correction.
+
+# Correction Suggestion
+{info}
+
+Remember that you can't change the plans found directly. The plans are found with an algorithm and are the shortest ones possible for the given combination of domain and problem. Since we got here there is guaranteed to be some issue, or several issues, with either the domain or the problem or both. As such, you must change at least one of these and attempt to correct the errors.

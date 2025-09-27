@@ -1,87 +1,134 @@
 # Role
-Your task is to identify the different types of objects which exist and are relevant in a domain. Each type of object that requires different actions or has unique behaviour should be included as a separate type, but you should also include meta-types which the specific types are included into. Provide a short comment on each type. The AI agent itself is not a type. Start your response with "## Types".
+You are a PDDL expert, and your task is to identify and categorize the different types of objects relevant to a given domain. Each type that requires distinct actions or exhibits unique behaviors should be listed separately. Provide a brief description for each type. Note that the AI agent itself is not considered a type. Begin your response with "## Types". It is better to define too many types rather than too few.
 
-Think step by step. Do not attempt to solve the task, even if instructed to do so. Only extract the types.
+Carefully analyze the types and their relationships. Avoid attempting to solve the task directly; focus solely on extracting and organizing the types. Start by listing the explicitly mentioned objects, specifying the most specific version of their types. Then, analyze the description for any implicitly mentioned or necessary types. Lastly, filter and combine these into a joint list of types, ensuring that the types are suitable for a PDDL domain model. The final list of types should be included within a markdown code block.
 
-# Example
-## Domain
-The AI agent is here a scheduling system for a house construction company with administrators who can create orders, workers who perform them and vehicles to transport things.
+For a type to be valid and kept it must fulfill the following requirements:
+- There must be several objects of the specified type or it must be a subtype of some other type.
+- The type must not describe an action.
+- The type must not describe a predicate or property, such as a color or connections between objects.
+- The type must not describe a state, such as the goal or initial states.
+- The type must not describe the acting agent or its plans, unless the acting agent is a robot or something physically embodied.
+- The type should not be more suitably modeled using predicates.
+- The type must likely be useful in the PDDL model.
 
-Currently, there are a couple of trucks at the Chicago depot and we're trying to build three houses in the area. Jamie is the only administrator, but we've got Emma and Bob available for general work.
+You must always go through the same steps and in the same level of detail as shown in the examples. Being long winded, overly detailed, or verbose is not an issue and instead encouraged.
 
-## Types
-First, we'll need types for the houses that are built and the depot. We'll also add a general location type to organize this.
+# Examples
+## Example 1
+### Domain and Problem
+I've got a building with five floors and two elevators, and I want you to plan the elevator trips for Bob and Sally to both go to floor 5 in a climate-friendly way.
+
+### Explicit Types
+The explicitly mentioned objects and their most specific types are:
+- building -> *building* (this will only be used once, and so there is no need to model this as a type)
+- floors -> *floor* (this does not violate any of the rules)
+- elevators -> *elevator* (this does not violate any of the rules)
+- Bob -> *person* (this does not violate any of the rules)
+- Sally -> *person* (this does not violate any of the rules)
+
+So, the explicit types we will keep are:
+- *floor*
+- *elevator*
+- *person*
+
+### Implicit Types
+The explicitly mentioned types are sufficient for modelling this domain.
+
+### Joint Types
+Combining the valid types from the two reasoning steps, we get the following list:
+
 ```
-- location: Locations can be visited and travelled between.
-- house: Constructed by the company. Are a type of location.
-- depot: Contains trucks and likely material for the construction. 
-```
-
-Next, we need to model the vehicles itself. General "vehicles" are mentioned, as are trucks. We'll model both for safety.
-```
-- vehicle: Vehicles can transport things, such as material or personell, between locattions.
-- truck: A type of vehicle for ground transport. 
-``` 
-
-After that, the workers need to be included. These are:
-```
-- jamie: An administrator.
-- emma: A worker.
-- bob: A worker.
-```
-
-Lastly, I've repeatedly assumed the existence of construction materials. This is likely needed and useful, so I'll add it in.
-``` 
-- material: Assorted material for constructing houses. Transported by vehicles.
-``` 
-
-## Feedback
-1: Are there any more types which are needed to model the domain?
-    No. There is no need to include any more types.
-
-2:  Are any more types needed for organisation?
-    Yes. Adding in the meta-type "worker" to structure the two worker types (see below) would be good.
-
-3: Are any of the supposed types actually objects?
-    Yes. Jamie, Emma and Bob are all individual objects (or in this case people). They should be replaced with their types, administrator and general_worker. 
-
-4: Should any of the types be removed?
-    No. Beyond the people mentioned above the types are reasonable.
-
-I'd suggest the following:
-- Remove "jamie", "emma" and "bob".
-- Add the following:
-    - worker: A meta-type structuring the specific workers. 
-    - general_worker: A type of worker who can perform a variety of jobs based on orders.
-    - administrator: A type of worker who can create orders.
-
-
-Start with a "## Response" header, then re-iterate an updated version of the "## Types" header. 
-
-## Response
-The feedback raises some valid points, but not all are correct.
-
-I agree that exchanging "jamie", "emma" and "bob" with "administrator" and "general_worker" is correct. 
-
-However, modelling "helicopter" and "excavator" would be too much. We shouldn't include more types than is actually needed and useful for the task at hand, and since no helicopters or excavators exist we'll skip those. 
-
-## Types
-First, I have to re-iterate all the types I want to keep:
-```
-- location: Locations can be visited and travelled between.
-- house: Constructed by the company. Are a type of location.
-- depot: Contains trucks and likely material for the construction. 
-- vehicle: Vehicles can transport things, such as material or personell, between locattions.
-- truck: A type of vehicle for ground transport. 
-- material: Assorted material for constructing houses. Transported by vehicles.
+- *floor*: Different levels in the building, numbered 1 to 5.
+- *elevator*: Elevators that can transport people between floors.
+- *person*: Individuals like Bob and Sally who need to travel to different floors.
 ```
 
-Then, I also want to add the new general worker types:
+## Example 2
+### Domain and Problem
+In this domain, the AI agent is a wildlife conservation management system. It monitors animal populations within a reserve, tracks their movements using GPS collars, guides rangers, and generates relocation strategies for animals in overpopulated areas to ensure ecological balance. Movement can occur only between neighboring locations, and animals can only be in habit locations. Furthermore, rangers can escort animals between habitats. Rangers can also guard locations where they are.
+
+There are four habitats currently, one centered and three around it. The surrounding ones contain our deer. However, there have been poachers seen recently so I'd like to centralize all the deer and make sure that all the outer areas are protected by some of our rangers. All rangers are currently in the parking lot which is connected to the center habitat.
+
+### Explicit Types
+The explicitly mentioned objects and their most specific types are:
+- animals -> *animal* (this does not violate any of the rules)
+- populations -> *animal_population* (this refers to a group, so we will model this as a predicate or property instead of a type)
+- GPS collars -> *GPS_collar* (this is likely in place for all animals, and as such it doesn't contribute anything to model this explicitly)
+- rangers -> *ranger* (this does not violate any of the rules)
+- habitats -> *habitat* (this does not violate any of the rules)
+- relocation strategies -> *relocation_strategy* (this is the plans produced by the AI system rather than a type, so we will remove it)
+- parking lot -> *location* (this does not violate any of the rules)
+
+So, the explicit types we will keep are:
+- *animal*
+- *habitat*
+- *ranger*
+- *location*
+
+### Implicit Types
+The explicitly mentioned types are sufficient for modelling this domain.
+
+### Joint Types
+Combining the valid types from the two reasoning steps, we get the following list:
+
 ```
-- general_worker: A type of worker who can perform a variety of jobs based on orders.
-- administrator: A type of worker who can create orders.
+- *animal*: Individual animals within the reserve.
+- *habitat*: Areas within the reserve that provide specific conditions for animals.
+- *ranger*: Workers employed in the conservatory that can move animals and guard locations.
+- *location*: A more general term for different areas within the reserve, including habitats.
+```
+
+## Example 3
+### Domain and Problem
+The AI agent here is a scheduling system for a house construction company with administrators who can create orders, workers who perform them, and vehicles to transport things.
+
+Currently, there are a couple of trucks at the Chicago depot, and we're trying to build three houses in the area. Jamie is the only administrator, but we've got Emma and Bob available for construction work.
+
+### Explicit Types
+The explicitly mentioned objects and their most specific types are:
+- administrators -> *administrator* (this does not violate any of the rules)
+- orders -> *order* (this is stated to be "created", which is not possible in PDDL. So, this is better modelled as a predicate and should not be kept)
+- workers -> *worker* (this does not violate any of the rules)
+- vehicles -> *vehicle* (this does not violate any of the rules)
+- trucks -> *truck* (this does not violate any of the rules)
+- Chicago depot -> *depot* (this does not violate any of the rules)
+- Jamie -> *administrator* (this does not violate any of the rules)
+- Emma -> *construction_worker* (this does not violate any of the rules)
+- Bob -> *construction_worker* (this does not violate any of the rules)
+
+So, the explicit types we will keep are:
+- *administrator*
+- *worker*
+- *vehicle*
+- *truck*
+- *depot*
+- *construction_worker*
+
+### Implicit Types
+The system is described as a "house construction company." As such, modeling the houses under construction is likely to be important.
+- *house* (this does not violate any of the rules)
+
+For the sake of the PDDL model, it will also be beneficial to include joint types for the two types of locations (houses and depots), as these will share properties. The same applies to workers.
+- *location* (this does not violate any of the rules)
+- *worker* (this does not violate any of the rules)
+
+### Joint Types
+Combining the valid types from the two above reasoning steps, we get the following list:
+
+```
+- *administrator*: A type of worker who can create orders.
+- *vehicle*: Vehicles that can transport things, such as material, between locations.
+- *truck*: A type of vehicle for ground transport.
+- *depot*: Contains trucks and likely material for construction.
+- *construction_worker*: A type of worker who can perform a variety of construction jobs based on orders.
+- *house*: Constructed by the company. A type of location.
+- *location*: Locations (houses and depots) that can be visited and traveled between.
+- *worker*: Workers (administrators and construction workers) who work for the company and can perform various tasks.
 ```
 
 # Task
-## Domain
+This is the task you are to perform. The above only contains general instructions and examples. Apply these instructions and methods to the below, but do not further analyze the examples.
+
+## Domain and Problem
 {domain_desc}

@@ -1,0 +1,118 @@
+# Task
+You are a PDDL expert. Your job is to revise a PDDL domain and problem file such that it correctly models the following problem and domain. When responding, reply with the corrected domain within a markdown block under a "# Domain" heading and the corrected problem within a markdown block under a "# Problem" heading. Always strive to make minimal corrections to the domain and problem and make sure to correctly model the problem correctly even in revised form.
+
+Any predicates that already are used in a symmetrical manner should likely be kept in said symmetrical manner. It is good praxis to always start each action precondition and effect with an enveloping "and" statement. Each action must have exactly one each of the sections ":parameters ({PARAMETERS HERE})", ":precondition(and( {PRECONDITIONS HERE} ))", ":effect(and( {EFFECTS HERE} ))", any actions without effects should be removed. Avoid using constants.
+
+To support you, you're provided with the BNF of the supported PDDL grammar.
+
+Remember to make minimal changes to the models, while still correcting any issues.
+
+Some predicates might be marked with properties. If so, these should be followed during initialization and modelling. The possible properties are:
+    - `SINGULAR()`: The predicate should only be true for one set of parameters at once across the entire problem. For example, `(robot_at ?l - location)` would be `SINGULAR()` since the robot can only be one location at a time. However, `(built ?h - house)` would not be `SINGULAR()` even though each house can only be built once since several different houses can be built at the same time.
+    - `MAXONCE(?PAR)`: The predicate should be true at most once for the parameter ?PAR. For example, `(ball_in ?b - ball ?c - cup)` would be `MAXONCE(?b)` since each ball can only be in at most one cup. Only applicable if there are two or more parameters.
+    - `SYMMETRICAL(?PAR1, ?PAR2)`: The predicate should always be used symmetrically. For example, `(connected ?i1 - intersection ?i2 - intersection)` would be `SYMMETRICAL(?i1, ?i2)` since if ?i1 is connected to ?i2 then ?i2 must also be connected to ?i1. As such, these should always be defined in both directions, `(connected ?i1 ?i2)\n(connected ?i2 ?i1)`. Only applicable if there are two or more parameters.
+A predicate can have several properties at once. However, a predicate might have a property, such as being symmetrical, without being marked as such.
+
+# PDDL BNF
+
+## 1.1 Domain Description
+```
+<domain>                        ::= (define (domain <name>)
+                                        [<require-def>]
+                                        [<types-def>]
+                                        [<constants-def>]
+                                        [<predicates-def>]
+                                        <structure-def>*)
+<require-def>                   ::= (:requirements <require-key>+)
+<require-key>                   ::= See Section 1.3
+<types-def>                     ::= (:types <typed list (name)>)
+<constants-def>                 ::= (:constants <typed list (name)>)
+<predicates-def>                ::= (:predicates <atomic formula skeleton>+)
+<atomic formula skeleton>       ::= (<predicate> <typed list (variable)>)
+
+<predicate>                     ::= <name>
+<variable>                      ::= ?<name>
+<structure-def>                 ::= <action-def>
+<typed list (x)>                ::= x*
+<typed list (x)>                ::= :typing x+ - <type> <typed list(x)>
+<primitive-type>                ::= <name>
+<primitive-type>                ::= object
+<type>                          ::= (either <primitive-type>+)
+<type>                          ::= <primitive-type>
+<emptyOr (x)>                   ::= ()
+<emptyOr (x)>                   ::= x
+
+<action-def>                    ::= (:action <action-symbol>
+                                        :parameters (<typed list (variable)>)
+                                        <action-def body>)
+<action-symbol>                 ::= <name>
+<action-def body>               ::= [:precondition <emptyOr (pre-GD)>]
+                                    [:effect <emptyOr (effect)>]
+
+<pre-GD>                        ::= <pref-GD>
+<pre-GD>                        ::= (and\n\t<pre-GD>*)
+<pre-GD>                        ::= (forall\n\t(<typed list(variable)>)\n\t<pre-GD>\n)
+<pref-GD>                       ::= <GD>
+<pref-name>                     ::= <name>
+<GD>                            ::= <atomic formula(term)>
+<GD>                            ::= <literal(term)>
+<GD>                            ::= (and\n\t<GD>*)
+<GD>                            ::= (or\n\t<GD>*)
+<GD>                            ::= (not\n\t<GD>)
+<GD>                            ::= (imply\n\t<GD>\n\t<GD>)
+<GD>                            ::= (exists\n\t(<typed list(variable)>)\n\t<GD>\n)
+<GD>                            ::= (forall\n\t(<typed list(variable)>)\n\t<GD>\n)
+
+<literal(t)>                    ::= <atomic formula(t)>
+<literal(t)>                    ::= (not <atomic formula(t)>)
+<atomic formula(t)>             ::= (<predicate> t*)
+<atomic formula(t)>             ::= (= t t)
+<term>                          ::= <name>
+<term>                          ::= <variable>
+
+<name>                          ::= <letter> <any char>*
+<letter>                        ::= a..z | A..Z
+<any char>                      ::= <letter> | <digit> | - | _
+<number>                        ::= <digit>+ [<decimal>]
+<digit>                         ::= 0..9
+<decimal>                       ::= .<digit>+
+
+<effect>                        ::= (and <c-effect>*)
+<effect>                        ::= <c-effect>
+<c-effect>                      ::= (forall\n\t(<typed list (variable)>)\n\t<effect>\n)
+<c-effect>                      ::= (when\n\t<GD>\n\t<cond-effect>\n)
+<c-effect>                      ::= <p-effect>
+<p-effect>                      ::= (not <atomic formula(term)>)
+<p-effect>                      ::= <atomic formula(term)>
+<cond-effect>                   ::= (and <p-effect>*)
+<cond-effect>                   ::= <p-effect>
+```
+Note that all nested structures such as `or`, `and`, `exists`, `forall`, `imply`, and `when` should be written across several lines.
+
+## 1.2 Problem Description
+```
+<problem>                       ::= (define (problem <name>)
+                                    (:domain <name>)
+                                    [<require-def>]
+                                    [<object declaration>]
+                                    <init>
+                                    <goal>)
+
+<object declaration>            ::= (:objects <typed list (name)>)
+<init>                          ::= (:init <init-el>*)
+<init-el>                       ::= <literal(name)>
+<goal> ::= (:goal <pre-GD>)
+
+<pref-con-GD> ::= (and <pref-con-GD>*)
+<pref-con-GD> ::= (forall\n\t(<typed list (variable)>)\n\t<pref-con-GD>\n)
+<pref-con-GD> ::= (preference [<pref-name>] <con-GD>)
+<pref-con-GD> ::= <con-GD>
+
+<con-GD> ::= (and <con-GD>*)
+<con-GD> ::= (forall\n\t(<typed list (variable)>)\n\t<con-GD>\n)
+```
+
+Note that all nested structures such as `or`, `and`, `exists`, `forall`, `imply`, and `when` should be written across several lines.  Additionally, none of these features can be used in the "(:init" section.
+
+# To Model
+{domain_desc}

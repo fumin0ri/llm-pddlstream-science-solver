@@ -1,0 +1,1 @@
+You're holding ring 1. Rod 1 has 2 rings on it, ring 2 above ring 3, whereas rod 2 has 3 rings, rings 4 to 6 with 4 at the top. I want you to invert the order of rod 2 while leaving the order of rod 1 unchanged.

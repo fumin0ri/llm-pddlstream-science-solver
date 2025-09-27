@@ -1,0 +1,1 @@
+Currently, there are five pools. Pool 1-4 are connected in a circle, with pool O being connected only to pool 1. There are koi (nice) in pool 1 and clownfish (nice) in pool 3. Pool2 and pool 4 contain lion fish (bad). The goal is to place lionfish in pool 2 and pool 3. 

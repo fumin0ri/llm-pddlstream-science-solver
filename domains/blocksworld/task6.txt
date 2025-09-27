@@ -1,0 +1,1 @@
+Currently, there are three stacks. One is red on blue, one is green on yellow and one is just purple. I want you to collect them all into one stack ordered (top to bottom) red, blue, yellow, purple, green.

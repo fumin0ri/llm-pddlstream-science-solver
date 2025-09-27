@@ -1,0 +1,1 @@
+Currently there are five cards in the deck. The first card can cycle, discard or mill. The remaining cards can all be used to cycle.

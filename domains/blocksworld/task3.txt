@@ -1,1 +1,1 @@
-I've got five blocks of three colours and want to stack them in a single pile such that the red blocks are at the bottom, the blue are on those and the green are on top. Currently they're in two stacks, (red, blue, green) and (green, red) ordered from the bottom up.
+There are four blocks in two piles. The first has blue on red and the second has yellow on green. I want a single stack ordered (top first): red, green, blue, yellow.

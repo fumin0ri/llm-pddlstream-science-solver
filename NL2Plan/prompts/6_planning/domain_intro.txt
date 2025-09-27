@@ -1,0 +1,9 @@
+# Domain
+```
+{domain}
+```
+
+# Problem
+```
+{problem}
+```

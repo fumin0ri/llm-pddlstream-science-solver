@@ -1,0 +1,1 @@
+Currently there is a knight and a thief located in a corridor which is connected to a trapped treasure room and a throne room. There is a sword the knight can use in the treasure room and a lich in the throne room. The thief can walk through traps. The goal is to defeat the lich.
