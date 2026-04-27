@@ -1,7 +1,7 @@
 import os
 
 from .utils.pddl_output_utils import combine_blocks
-from .utils.paths import type_extraction_prompts as prompt_dir
+from .utils.paths import initial_facts_extraction_prompts as prompt_dir
 from .utils.logger import Logger
 from .utils.human_feedback import human_feedback
 from .utils.llm_model import LLM_Chat, get_llm
@@ -9,7 +9,7 @@ from .utils.pddl_types import Predicate
 from .utils.pddl_generator import PddlGenerator
 
 @Logger.section("1 Init Facts Extraction")
-def type_extraction(llm_conn: LLM_Chat, domain_desc_str: str, feedback: str | None = None):
+def initial_facts_extraction(llm_conn: LLM_Chat, domain_desc_str: str, feedback: str | None = None):
     llm_conn.reset_token_usage()
 
     with open(os.path.join(prompt_dir, "main2.txt")) as f:

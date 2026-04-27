@@ -3,22 +3,10 @@ import os
 from .utils.paths import stream_extraction_prompts as prompt_dir
 from .utils.logger import Logger
 from .utils.human_feedback import human_feedback
-from .hierarchy_construction import Hierarchy
 from .utils.llm_model import LLM_Chat, get_llm
 
 @Logger.section("3 Stream Extraction")
 def stream_extraction(llm_conn: LLM_Chat, domain_desc_str: str, init, feedback: str | None = None) -> dict[str, str]:
-    """
-    Extracts streams from a given domain description using a GPT_Chat language model.
-
-    Args:
-        llm_conn (LLM_Chat): The language model.
-        domain_desc_str (str): The domain description string.
-        type_hierarchy (Hierarchy): The type hierarchy.
-
-    Returns:
-        dict[str, str]: A dictionary of extracted streams, where the keys are action names and the values are action descriptions.
-    """
     llm_conn.reset_token_usage()
 
     with open(os.path.join(prompt_dir, "feedback2.txt")) as f:

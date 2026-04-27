@@ -9,7 +9,6 @@ from .utils.logger import Logger
 from .utils.pddl_generator import PddlGenerator
 from .utils.human_feedback import human_feedback
 from .utils.pddl_errors import domain_errors
-from .hierarchy_construction import Hierarchy
 from .utils.llm_model import LLM_Chat, get_llm, shorten_messages
 
 MESSAGE_HISTORY = {}
@@ -143,7 +142,6 @@ def construct_stream(
         mirror_symmetry=False,
         generalize_predicate_types=False,
         domain_feedback = None,
-        type_hierarchy: Hierarchy = None,
         timeout_seconds: int = 600,
         max_retries: int = 3
     ) -> tuple[Stream, list[Predicate], dict[str, dict[int, str]]]:

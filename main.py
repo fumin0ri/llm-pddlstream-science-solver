@@ -1,5 +1,4 @@
 from NL2Plan.main import main as NL2Plan_main
-from PDDL0.main import main as PDDL0_main
 import argparse, os, json
 from typing import Literal
 import copy
@@ -42,7 +41,7 @@ def main():
     with open(os.path.join(root_dir, 'domains', args.domain, 'desc.txt'), 'r') as f:
         desc = f.read()
     
-    # --domain と --task からJSONファイルのフルパスを生成する
+
     json_relative_path = f'{args.task}.json'
     tasks_json_path = os.path.join(root_dir, 'domains', args.domain, json_relative_path)
 
@@ -101,16 +100,6 @@ def NL2Plan_planner(args):
         instance_name = args.instance_name,
     )
     return plan
-
-def PDDL0_planner(args):
-    return PDDL0_main(
-        domain = args.domain,
-        domain_task_desc = args.desc_task,
-        llm = args.llm,
-        instance_name = args.instance_name,
-        max_attempts = args.max_attempts,
-        validation_enabled = not args.disable_validation
-    )
 
 if __name__ == "__main__":
     main()

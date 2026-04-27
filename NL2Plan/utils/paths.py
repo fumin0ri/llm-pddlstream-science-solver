@@ -8,12 +8,10 @@ results_dir = path.join(root_dir, 'results')
 
 # Prompts
 prompt_dir = path.join(nl2plan_dir, 'prompts')
-type_extraction_prompts = path.join(prompt_dir, '1_type_extraction')
-type_hierarchy_prompts = path.join(prompt_dir, '2_hierarchy_construction')
+initial_facts_extraction_prompts = path.join(prompt_dir, '1_initial_facts_extraction')
 stream_extraction_prompts = path.join(prompt_dir, '3_stream_extraction')
 stream_construction_prompts = path.join(prompt_dir, '4_stream_construction')
-state_goal_extraction_prompts = path.join(prompt_dir, '5_problem_extraction')
-planning_prompts = path.join(prompt_dir, '6_planning')
+
 
 # External tools
 scorpion_dir = path.join(root_dir, 'scorpion')

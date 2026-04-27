@@ -1,9 +1,0 @@
-# Domain
-```
-{domain}
-```
-
-# Problem
-```
-{problem}
-```
