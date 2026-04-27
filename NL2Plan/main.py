@@ -7,8 +7,8 @@ from .utils.pddl_generator import PddlGenerator
 from .utils.llm_model import get_llm
 from .hierarchy_construction import hierarchy_construction
 from .type_extraction import type_extraction
-from .action_extraction import action_extraction
-from .action_construction import action_construction
+from .stream_extraction import stream_extraction
+from .stream_construction import stream_construction
 from .problem_extraction import problem_extraction
 from .planning import planning
 
@@ -68,9 +68,10 @@ def main(
 
     # extract the available types
     if start_from <= 1:
-        types = type_extraction(llm_gpt, domain_task, feedback=feedback)
+        init = type_extraction(llm_gpt, domain_task, feedback=feedback)
         PddlGenerator.generate()
 
+    """
         if checkpoints:
             with open(f"{Logger.directory}/checkpoint1.pkl", 'wb') as f:  # Open the file in binary mode
                 pickle.dump([types, PddlGenerator], f)  # Write the data as bytes
@@ -81,7 +82,9 @@ def main(
     if end_after <= 1:
         PddlGenerator.generate() # Generate the final PDDL file
         return None
+        """
 
+    """
     if start_from <= 2:
         # construct the type hierarchy
         type_hierarchy = hierarchy_construction(
@@ -100,18 +103,19 @@ def main(
     if end_after <= 2:
         PddlGenerator.generate()
         return None
+    """
 
     # extract action info
     if start_from <= 3:
-        action_desc = action_extraction(llm_gpt, domain_task, type_hierarchy, feedback=feedback)
+        stream_desc = stream_extraction(llm_gpt, domain_task, init, feedback=feedback)
         PddlGenerator.generate()
 
         if checkpoints:
             with open(f"{Logger.directory}/checkpoint3.pkl", 'wb') as f:
-                pickle.dump([types, type_hierarchy, action_desc, PddlGenerator], f)
+                pickle.dump([stream_desc, PddlGenerator], f)
     elif start_from == 4:
         with open(os.path.join(start_dir, "checkpoint3.pkl"), 'rb') as f:
-            types, type_hierarchy, action_desc, PddlGenerator2 = pickle.load(f)
+            types, type_hierarchy, stream_desc, PddlGenerator2 = pickle.load(f)
         PddlGenerator.copy(PddlGenerator2)
     if end_after <= 3:
         PddlGenerator.generate()
@@ -119,34 +123,33 @@ def main(
 
     # construct the actions
     if start_from <= 4:
-        actions, predicates, pruned_types = action_construction(
-            llm_gpt, action_desc, domain_task, type_hierarchy, feedback=feedback,
+        streams, predicates = stream_construction(
+            llm_gpt, stream_desc, domain_task, init, feedback=feedback,
             shorten_message=shorten_message, max_attempts=max_step_4_attempts, max_iters=act_constr_iters,
             unsupported_keywords=None, generalize_predicate_types=generalize_predicates,
             feedback_level=act_constr_feedback_level,
         )
-        # remove types that are not used in the actions or predicates
-        type_hierarchy = type_hierarchy.prune_to(pruned_types)
-        PddlGenerator.set_types(type_hierarchy.type_list())
         PddlGenerator.generate()
 
         # Store the domain file separately
         domain_4_path = os.path.join(os.path.dirname(PddlGenerator.domain_file), "domain_4.pddl")
         with open(domain_4_path, 'w') as f:
             f.write(PddlGenerator.get_domain())
-
+        """
         if checkpoints:
             with open(f"{Logger.directory}/checkpoint4.pkl", 'wb') as f:
                 pickle.dump([types, type_hierarchy, predicates, actions, PddlGenerator], f)
+        
     elif start_from == 5:
         with open(os.path.join(start_dir, "checkpoint4.pkl"), 'rb') as f:
             types, type_hierarchy, predicates, actions, PddlGenerator2 = pickle.load(f)
         PddlGenerator.copy(PddlGenerator2)
     if end_after <= 4:
         PddlGenerator.generate()
-        return None
+        return None"""
 
     # extract goal and initial state
+    """
     if start_from <= 5:
         goal, state, objects = problem_extraction(llm_gpt, domain_task, type_hierarchy, predicates, shorten_message=shorten_message, max_attempts=max_step_5_attempts, feedback=feedback)
         PddlGenerator.generate()
@@ -155,7 +158,7 @@ def main(
         problem_5_path = os.path.join(os.path.dirname(PddlGenerator.problem_file), "problem_5.pddl")
         with open(problem_5_path, 'w') as f:
             f.write(PddlGenerator.get_problem())
-
+        
         if checkpoints:
             with open(f"{Logger.directory}/checkpoint5.pkl", 'wb') as f:
                 pickle.dump([types, type_hierarchy, predicates, actions, objects, goal, state, PddlGenerator], f)
@@ -167,6 +170,7 @@ def main(
         PddlGenerator.generate()
         return None
 
+    
     # Solve the generated PDDL
     PddlGenerator.generate() # Generate the final PDDL file
     plan = planning(llm_conn=llm_gpt, max_attempts=max_step_6_attempts, domain_desc=domain_task)
@@ -174,7 +178,8 @@ def main(
     plan_str = ("\t- " + "\n\t- ".join(plan)) if plan is not None else "No plan found."
     Logger.print("Plan:\n", plan_str)
 
-    return plan
+    return plan"""
+    return "ok"
 
 if __name__ == "__main__":
     print("To demo the NL2Plan pipeline, instead run the main.py script in the root directory.")

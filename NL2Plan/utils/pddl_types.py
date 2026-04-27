@@ -11,6 +11,7 @@ class Predicate(TypedDict):
     params: ParameterList # parameters of the predicate
     clean: str # clean version of the predicate, with comment
     signature: str # clean version of the predicate, without comment. e.g (at ?t - truck ?l - location)
+    init: str
 
 class Action(TypedDict):
     name: str
@@ -19,3 +20,11 @@ class Action(TypedDict):
     parameters: ParameterList
     preconditions: str
     effects: str
+
+class Stream(TypedDict):
+    name: str
+    desc: str
+    raw: str
+    pddl: str
+    code: str
+    

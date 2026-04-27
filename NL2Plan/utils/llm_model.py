@@ -159,7 +159,7 @@ class GPT_Chat(LLM_Chat):
 
 class OLLAMA_Chat(LLM_Chat):
     def __init__(self, engine, stop=None, max_tokens=8e3, temperature=0, top_p=1,
-                 frequency_penalty=0.0, presence_penalty=0.0, seed=0):
+                 frequency_penalty=0.0, presence_penalty=0.0, seed=0, num_ctx=8192, num_batch=1024):
         super().__init__()
         print("WARNING: Ollama LLM usage is largely untested and may not work as expected.")
         self.engine = engine
@@ -175,7 +175,9 @@ class OLLAMA_Chat(LLM_Chat):
         self.frequency_penalty = frequency_penalty
         self.in_tokens = 0
         self.out_tokens = 0
-        self.tok = tiktoken.get_encoding("cl100k_base") # For GPT3.5+
+        self.tok = tiktoken.get_encoding("o200k_base") # For gpt:oss
+        self.num_ctx = num_ctx
+        self.num_batch = num_batch
 
     def get_response(self, prompt=None, messages=None):
         if prompt is None and messages is None:
@@ -196,7 +198,9 @@ class OLLAMA_Chat(LLM_Chat):
                 "temperature": self.temperature,
                 "top_p": self.top_p,
                 "presence_penalty": self.presence_penalty,
-                "frequency_penalty": self.frequency_penalty
+                "frequency_penalty": self.frequency_penalty,
+                "num_ctx": self.num_ctx,
+                "num_batch": self.num_batch,
             }
         }
 
@@ -282,7 +286,4 @@ class LOCAL_LLAMA_Chat(LLM_Chat):
         return text
 
 def get_llm(engine, **kwargs) -> LLM_Chat:
-    if "llama" in engine:
-        return LOCAL_LLAMA_Chat(engine, **kwargs)
-    else:
-        return GPT_Chat(engine, **kwargs)
+    return OLLAMA_Chat(engine, **kwargs)

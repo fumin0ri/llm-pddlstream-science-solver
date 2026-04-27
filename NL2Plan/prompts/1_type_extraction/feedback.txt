@@ -209,6 +209,7 @@ I've got a building with five floors and two elevators, and I want you to plan t
 
 ### Feedback
 As the answer to each question was "No", I have no feedback to give. So: No feedback.
+Answers must strictly follow the format in the Example.
 
 # Task
 ## Domain and Problem

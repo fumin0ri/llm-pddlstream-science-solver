@@ -429,3 +429,5 @@ This is the task you are to perform. The above only contains general instruction
 {action_name}
 
 {action_desc}
+
+Your response must include ### Action Parameters, ### Action Preconditions, ### Action Effects, and ### New Predicates. Additionally, the content of each heading must follow the format shown.

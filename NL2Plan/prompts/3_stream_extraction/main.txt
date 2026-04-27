@@ -277,6 +277,7 @@ A worker exits a vehicle at a location. Requires that the worker is inside the v
 
 # Task
 This is the task you are to perform. The above only contains general instructions and examples. Apply these instructions and methods to the below, but do not further analyze the examples.
+Answers must strictly follow the format in the Example. Please be sure to answer using the same heading and format.
 
 ## Domain and Problem
 {domain_desc}

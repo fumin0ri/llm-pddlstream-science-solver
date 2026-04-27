@@ -3,6 +3,8 @@ from PDDL0.main import main as PDDL0_main
 import argparse, os, json
 from typing import Literal
 import copy
+# ★追加: Hugging Face datasetsをインポート
+from datasets import load_dataset
 
 root_dir = os.path.dirname(os.path.realpath(__file__))
 domain_dir = os.path.join(root_dir, 'domains')
@@ -17,8 +19,9 @@ def main():
 
     # Joint arguments for each planner
     for sub in [NL2Plan_parser, PDDL0_parser]:
-        sub.add_argument('--domain', default='logistics', type=str, help='The domain name (e.g., scibench).', choices=domains, nargs='?')
-        sub.add_argument('--task', type=str, default='tasks', help='The relative path to the task JSON file from the domain folder (without .json extension).')
+        # 注意: desc.txtを読むためにdomain引数は依然として必要です（適切なフォルダを指定してください）
+        sub.add_argument('--domain', default='logistics', type=str, help='The domain name.', choices=domains, nargs='?')
+        sub.add_argument('--task', type=str, default='tasks', help='(Not used for HF dataset) The relative path to the task JSON file.')
         sub.add_argument('--llm', type=str, default='gpt-4o', help='The LLM engine name.', nargs='?')
         sub.add_argument('--instance_name', type=str, default=None, help='The base name of the subfolder where results are saved.')
 
@@ -38,35 +41,60 @@ def main():
 
     args = parser.parse_args()
 
-    # ドメインの説明文を読み込む
-    with open(os.path.join(root_dir, 'domains', args.domain, 'desc.txt'), 'r') as f:
-        desc = f.read()
+    # ドメインの説明文を読み込む (desc.txtが必要なため、既存のdomainフォルダを指定する必要があります)
+    desc_path = os.path.join(root_dir, 'domains', args.domain, 'desc.txt')
+    if os.path.exists(desc_path):
+        with open(desc_path, 'r') as f:
+            desc = f.read()
+    else:
+        print(f"Warning: {desc_path} not found. Running without domain description.")
+        desc = ""
     
-    # --domain と --task からJSONファイルのフルパスを生成する
-    json_relative_path = f'{args.task}.json'
-    tasks_json_path = os.path.join(root_dir, 'domains', args.domain, json_relative_path)
+    # ★変更: ローカルJSONではなくHugging Faceからデータセットをロード
+    hf_dataset_name = "SakanaAI/gsm8k-ja-test_250-1319"
+    print(f"Loading dataset from Hugging Face: {hf_dataset_name}")
+    
+    ds = load_dataset(hf_dataset_name)
+    
+    # データセットのSplitを確認してリスト化 (通常は 'test' または 'train')
+    if 'test' in ds:
+        tasks = ds['test']
+    elif 'train' in ds:
+        tasks = ds['train']
+    else:
+        # splitがない場合は最初のキーを使用
+        tasks = ds[list(ds.keys())[0]]
 
-    print(f"Attempting to load tasks from: {tasks_json_path}")
-    with open(tasks_json_path, 'r') as f:
-        tasks = json.load(f)
+    tasks = list(tasks)
+    print(f"Loaded {len(tasks)} tasks.")
 
-    # ループ処理
-    for i, task_item in enumerate(tasks[94:],start=94):
+    # ★変更: ループ処理 (全件処理に変更、start=16を削除)
+    for i, task_item in enumerate(tasks[102:500],start=102):
         current_args = copy.deepcopy(args)
         
-        problem_text = task_item.get("problem_text")
-        unit = task_item.get("unit")
+        # ★変更: HFデータセットの 'question' カラムを取得
+        problem_text = task_item.get("question")
+        
+        # ★変更: GSM8Kには 'unit' がないため、空文字またはNoneとして扱う
+        unit = task_item.get("unit", "") 
+
         if not problem_text:
-            print(f"Skipping task {i+1} due to missing 'problem_text'.")
+            print(f"Skipping task {i+1} due to missing 'question'.")
             continue
 
         task_id = i + 1
-        current_args.desc_task = f'{desc}\n\n{problem_text} Please answer in the following units: {unit}'
+        
+        # ★変更: unitがある場合とない場合でプロンプトの構築を分ける
+        if unit:
+            current_args.desc_task = f'{desc}\n\n{problem_text} Please answer in the following units: {unit}'
+        else:
+            current_args.desc_task = f'{desc}\n\n{problem_text}'
 
-        base_instance_name = args.instance_name if args.instance_name else f"{args.domain}_{args.task.replace('/', '_')}_{args.llm}"
+        # インスタンス名の生成 (HF用に変更)
+        base_instance_name = args.instance_name if args.instance_name else f"{args.domain}_gsm8k_ja_{args.llm}"
         current_args.instance_name = f"{base_instance_name}_task{task_id}"
 
-        print(f"Running {current_args.planner} on domain {current_args.domain} with task ID {task_id} from {args.task}.json and LLM {current_args.llm}.\n{'-'*50}")
+        print(f"Running {current_args.planner} on domain {current_args.domain} with task ID {task_id} (GSM8K) and LLM {current_args.llm}.\n{'-'*50}")
 
         if current_args.planner == "NL2Plan":
             plan = NL2Plan_planner(current_args)
@@ -77,7 +105,7 @@ def main():
         
         print(f"\nFinished task ID {task_id}.\n{'='*50}\n")
 
-
+# 以下、Planner関数は変更なし
 def NL2Plan_planner(args):
     feedback = None if args.no_feedback else "llm"
     max_4 = args.max_step_4_attempts if args.max_step_4_attempts is not None else args.max_step_4_5_6_attempts

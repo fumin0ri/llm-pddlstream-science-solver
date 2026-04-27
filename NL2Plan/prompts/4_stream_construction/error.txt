@@ -14,3 +14,5 @@ Make sure to reply with all four parts of the action: parameters, preconditions,
 {action_name}
 
 {action_desc}
+
+Your response must follow the format shown.

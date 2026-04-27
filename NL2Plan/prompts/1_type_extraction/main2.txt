@@ -1,0 +1,54 @@
+# Role
+You are a PDDL expert.
+Your task is to analyse the given question and extract the given facts. Please use the example below as a reference. Your answer should follow the format of # Example.
+You need to accurately extract all the given facts. 
+In the ## Problem analysis section, analyze the problem and write a concise summary of your analysis in English. Include what the initial facts are, what the final answer should be, what calculations you should make to arrive at that answer, and any conditions or constraints. Note that all analysis content must be enclosed in ```.
+PDDL does not allow non-ASCII characters such as Greek letters (λ,Δ) and must be written using only alphanumeric characters. You cannot use non-ASCII characters for either predicates or variable names. For example, (λ ?λ) is not allowed; you must write (lambda ?lam) instead. Also, you cannot use (?lambda) as a variable name.
+## In Initial Facts, each parameter should be expressed numerically whenever possible. Here, you just need to find the initial facts and not do any calculations.
+You can’t assign multiple numerical values to a single predicate variable.
+Do not use the same variable name across different predicates. For example, (mass_a ?m) and (mass_b ?m) are not allowed; you must use (mass_a ?m_a) and (mass_b ?m_b) instead.
+You cannot assign different values to the same predicate. Instead of writing something like (dist ?name ?num) with facts such as ('dist', 1, 2.0), ('dist', 2, 3.5) you have to write (dist_a ?num_a), (dist_b ?num_b), etc.
+Variable names that differ only in uppercase and lowercase cannot be used across predicates. For example, (mass_a ?m) and (mass_b ?M) will cause an error, so you need to use something like (mass_a ?ma) or (mass_b ?mb) instead.
+If no specific numerical values are given in the domain and the problem, there is no need to define predicates. If there are no predicates to define, write empty code blocks for ## Predicates and ## Initial Facts.
+
+# Example
+
+## Domain and problem
+
+Our AI agent is a computational robot that solves specific problems that require calculations and returns an answer, which must also indicate the process it followed, such as what mathematical formulas it applied.
+
+A small car of mass 800 kg starts from rest and accelerates uniformly to a speed of 20 m/s in 10 seconds on a flat road. During this time, the engine provides a constant power output, and the resistive force acting on the car is 400 N. What is the power output of the engine? (Ignore air resistance other than the 400 N resistive force.)
+
+## Problem analysis
+```
+Here, we will analyze and organize the domain. All phenomena mentioned in the problem statement must be considered, and the problem must be solved rigorously.
+Please describe the **initial facts**, **what must be answered** (the requirements), and the **given conditions and constraints** as rigorously and in as much detail as possible.
+```
+
+## Predicates
+Here we define what each parameter represents as a predicate. Greek letters are not allowed here.
+If there are no predicates to define, write empty code blocks for ## Predicates and ## Initial Facts.
+```
+(mass ?m) ;m[kg]
+(velocity ?v) ;v[m/s]
+(time ?t) ;t[s]
+(resistive_force ?fr) ;fr[N]
+```
+
+## Initial Facts
+Here we write the numerical values ​​corresponding to the predicates we defined earlier. Note that each element must be separated by a comma.
+```
+('mass', 800.0)
+('velocity', 20.0) 
+('time', 10.0) 
+('resistive_force', 400.0) 
+```
+
+# Task
+The ##Domain and Problem below is the problem you will solve. Please answer in the format shown in the example above. Your answer should begin with ## Problem analysis.
+Here, you just need to find the initial facts and not do any calculations.
+
+## Domain and Problem
+{domain_desc}
+
+Responses must contain three headings: ## Problem analysis, ## Predicates, and ## Initial Facts. All content in "## Problem analysis" must be enclosed in ```.

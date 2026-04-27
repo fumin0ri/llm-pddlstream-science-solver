@@ -1,0 +1,268 @@
+# Role
+You are a pddl expert. We will consider each stream in ## All Streams one by one, from top to bottom. Write the pddl for the given stream and the corresponding python code.
+A stream defines how new facts results can be derived by computation from known facts inputs. It connects symbolic reasoning “what is known” with numeric or functional evaluation “what can be computed”.
+For example, in an expression like (mass ?m), “mass” is called the predicate name, and “?m” is called a variable.
+In the last stream, certify with the predicate (answer). The value of ‘answer’ must exclude the specified unit. For example, if the answer is 500 and the unit is specified as 10² N, the value of ‘answer’ must be 5.0.
+
+:inputs
+
+* **Role:** Variables that are *already known* (grounded constants when the stream fires).
+* **Constraint:**
+
+  * Must be declared explicitly.
+  * Used as arguments in the Python function.
+  * Must appear in the same order as the function parameters.
+  * Cannot introduce new variables. Only predicate variables defined in '## Available Predicates' can be used.
+
+:outputs
+
+* **Role:** Variables that the stream *generates* (new constants produced by the Python function).
+* **Constraint:**
+
+  * The variable names in :outputs must not match the variable names of any predicates listed in ## Available Predicates. Uppercase and lowercase letters are not distinguished. For example, if ## Available Predicates contains a predicate such as (mass ?m), then you must not write :outputs (?M). You need to change it to something like :outputs (?m_calc) instead.
+  * Number and order must match the function’s return tuple.
+  * Should represent new information not known before.
+
+
+:domain
+
+* **Role:** Preconditions — facts that must already hold before the stream is invoked.
+* **Constraint:**
+
+  * In the :domain section, you may only use predicates that have already been defined. You must not use any new predicates.
+  * Can only reference variables declared in `:inputs` (and sometimes shared ones).
+  * Cannot introduce undeclared variables.
+  * Defines when the stream is applicable.
+  * The predicate variables cannot change and must match exactly.
+
+:certified
+
+* **Role:** Facts that become true once the stream fires successfully.
+* **Constraint:**
+
+  * Can use variables from both `:inputs` and `:outputs`.
+  * Must not contain undeclared variables.
+  * In the `:certified` section, please create and use new predicates. Do not use any predicates from the `## Available Predicates` section.
+  * Represents monotonic (permanent) additions to the knowledge base.
+
+Summary rule:
+Every variable appearing anywhere in a stream definition must appear in **either** `:inputs` or `:outputs`.
+Inputs are *known before execution*; outputs are *produced after execution*.
+
+Note that you must also certify (done) in any stream that gives you a final answer. It is not possible to certify (done) multiple times.
+Please use _ instead of - in predicates and stream names. PDDL does not allow non-ASCII characters such as Greek letters (λ,Δ,ρ,θ,σ,φ) and must be written using only alphanumeric characters.
+In Stream, there is a rule that all variables that appear in :domain must also be included in :inputs. Also, all variables in :input must be included in :domain, meaning that the variables in :input and :domain must match exactly.
+The PDDLStream parser does not allow empty lists in the :domain section, so empty lists must be written as (and). In the :input section, empty lists should be written as ().
+Below is an example of how to write a stream.
+
+  (:stream compute_accel
+    :inputs (?m ?v ?t ?fr) 
+    :domain (params ?m ?v ?t ?fr) ;All variables that appear in the input must be written as variables of the predicate.
+    :outputs (?a) ;The variable names in :outputs must not match the variable names of any predicates listed in ## Available Predicates. Uppercase and lowercase letters are not distinguished. For example, if ## Available Predicates contains a predicate such as (mass ?m), then you must not write :outputs (?M). You need to change it to something like :outputs (?m_calc) instead.
+    :certified (accel ?a) ;Define the variables of the output using a new predicate.
+  )
+
+  (:stream compute_dist
+    :inputs (?a ?m ?v ?t ?fr)
+    :domain (and (accel ?a) (params ?m ?v ?t ?fr))
+    :outputs (?s)
+    :certified (dist ?s)
+  )
+
+  (:stream compute_dke
+    :inputs (?m ?v ?t ?fr)
+    :domain (params ?m ?v ?t ?fr)
+    :outputs (?ke)
+    :certified (dke ?ke)
+  )
+
+  (:stream compute_rwork
+    :inputs (?m ?v ?t ?fr ?s)
+    :domain (and (params ?m ?v ?t ?fr) (dist ?s))
+    :outputs (?wr)
+    :certified (rwork ?wr)
+  )
+
+  (:stream compute_energy
+    :inputs (?ke ?wr)
+    :domain (and (dke ?ke) (rwork ?wr))
+    :outputs (?E)
+    :certified (energy ?E)
+  )
+
+  (:stream compute_power
+    :inputs (?E ?m ?v ?t ?fr)
+    :domain (and (energy ?E) (params ?m ?v ?t ?fr))
+    :outputs (?P)
+    :certified (and (answer ?P) (done)) ;If there are multiple predicates, you need to include ‘and’
+  )
+
+
+
+# Example
+
+## Domain and Problem
+
+Our AI agent is a computational robot that solves specific problems that require calculations and returns an answer, which must also indicate the process it followed, such as what mathematical formulas it applied.
+
+A small car of mass 800 kg starts from rest and accelerates uniformly to a speed of 20 m/s in 10 seconds on a flat road. During this time, the engine provides a constant power output, and the resistive force acting on the car is 400 N. What is the power output of the engine? (Ignore air resistance other than the 400 N resistive force.)
+
+
+## Init Facts
+(mass ?m) ;m[kg]
+(velocity ?v) ;v[m/s]
+(time ?t) ;t[s]
+(resistive_force ?fr) ;fr[N]
+
+('mass', 800.0)
+('velocity', 20.0) 
+('time', 10.0) 
+('resistive_force', 400.0) 
+
+## Available Predicates
+
+(mass ?m) ;m[kg]
+(velocity ?v) ;v[m/s]
+(time ?t) ;t[s]
+(resistive_force ?fr) ;fr[N]
+(done)
+
+## Already-defined streams
+
+
+## Stream
+accel_from_vt
+
+Computes uniform acceleration.  
+Formula: a = v / t  
+Requires Speed and Time.  
+Produces Accel 
+
+### Stream pddl
+The stream name must be the same as ## stream.
+The predicate variables and number of variables cannot be changed and must match exactly.
+All elements of :domain must also be included in :input, so ?m and ?fr are not used in the actual calculation, but are included in the :input section.
+Since what is calculated here is not the final answer, (done) is not certified. 
+```
+(:stream accel_from_vt
+  :inputs (?v ?t)
+  :domain (and(velocity ?v) (time ?t))
+  :outputs (?a)
+  :certified (accel ?a)
+)
+```
+
+### New Predicates
+
+Write here the predicates newly defined in the :certified section:
+```
+(accel ?a )
+```
+
+### Stream code
+
+This is where you write the python code that corresponds to the stream.
+The function name should be the stream name with _py appended.
+Note that only numerical values can be assigned to predicate variables; they cannot be assigned in the form of lists or dictionaries.
+Also, the variable name of :input must match the argument name of the Python function.
+A Python function must return only concrete numerical values. It cannot return anything containing characters, and it must assign and compute with specific numerical values within the function.
+```
+def accel_from_vt_py(v, t):
+    return (float(v / t),)
+```
+
+# Example2
+
+## Domain and Problem
+
+Our AI agent is a computational robot that solves specific problems that require calculations and returns an answer, which must also indicate the process it followed, such as what mathematical formulas it applied.
+
+A small car of mass 800 kg starts from rest and accelerates uniformly to a speed of 20 m/s in 10 seconds on a flat road. During this time, the engine provides a constant power output, and the resistive force acting on the car is 400 N. What is the power output of the engine? (Ignore air resistance other than the 400 N resistive force.)
+
+## Init Facts
+(params ?m ?v ?t ?fr)   ; m[kg], v[m/s], t[s], fr[N]
+
+('params', 800.0, 20.0, 10.0, 400.0)
+
+## Available Predicates
+
+(params ?m ?v ?t ?fr)
+(energy ?E) 
+(done)
+
+
+## Stream
+power_from_wt
+
+Computes constant power output.  
+Formula: P = W_total / t  
+Requires W_total and Time.  
+Produces Power and final Answer.
+
+### Stream pddl
+The stream name must be the same as ## stream.
+Here too, the elements of :input and :domain need to match, so elements that are not used in the actual calculation should also be included in :input.
+This is where you get the final answer and (done) is also certified.The variable of the predicate (answer ...)must be assigned a single numerical value.
+```
+(:stream power_from_wt
+  :inputs (?E ?m ?v ?t ?fr)
+  :domain (and (energy ?E) (params ?m ?v ?t ?fr))
+  :outputs (?ans)
+  :certified (and (answer ?ans) (done))
+)
+```
+
+### New Predicates
+
+We used the following predicates and define them here:
+
+```
+(answer ?ans)
+```
+
+
+
+### Stream code
+
+This is where you write the python code that corresponds to the stream.
+The function name should be the stream name with _py appended.
+Note that only numerical values can be assigned to predicate variables; they cannot be assigned in the form of lists or dictionaries.
+The variable of the predicate (answer ...) must be assigned a single numerical value.
+
+```
+def power_from_wt_py(E, m, v, t, fr):
+    return (float(E / t),)
+```
+
+# Task
+This is the task you are to perform. The above only contains general instructions and examples. Apply these instructions and methods to the below, but do not further analyze the examples. Please only consider the stream given below.
+Each heading must start with ### and match the #Example heading exactly. If you don't need to define any new predicates, just put an empty code block in ### New Predicates.
+
+## Domain
+{domain_desc}
+
+## Init Facts
+{init_pddl}
+
+{init_code}
+
+## ALL streams
+The following is a description of all the streams that are already defined or planned to be defined within this domain. Do not mention any other streams of ALL streams at all.
+
+{stream_list}
+
+## Available Predicates
+{predicate_list}
+
+## Already-defined streams
+{defined_streams}
+
+## Stream
+Here, we will consider this stream within All Streams.
+
+{stream_name}
+
+{stream_desc}
+
+Note that each heading code must be enclosed in ```.
+Replies must follow the format shown in the # Example and begin with ### Stream pddl.

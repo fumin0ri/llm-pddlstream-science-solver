@@ -5,25 +5,41 @@ from .utils.paths import type_extraction_prompts as prompt_dir
 from .utils.logger import Logger
 from .utils.human_feedback import human_feedback
 from .utils.llm_model import LLM_Chat, get_llm
+from .utils.pddl_types import Predicate
+from .utils.pddl_generator import PddlGenerator
 
-@Logger.section("1 Type Extraction")
+@Logger.section("1 Init Facts Extraction")
 def type_extraction(llm_conn: LLM_Chat, domain_desc_str: str, feedback: str | None = None):
     llm_conn.reset_token_usage()
 
-    with open(os.path.join(prompt_dir, "main.txt")) as f:
+    with open(os.path.join(prompt_dir, "main2.txt")) as f:
         type_extr_template = f.read().strip()
     type_extr_prompt = type_extr_template.replace('{domain_desc}', domain_desc_str)
     Logger.log("PROMPT:\n", type_extr_prompt)
 
-    llm_output = llm_conn.get_response(type_extr_prompt)
+   
+    for iter in range(8):
+        try:
+            llm_output = llm_conn.get_response(type_extr_prompt)
+            llm_output = clean_llm_output(llm_output)
 
-    types = parse_types(llm_output)
-    type_str = "\n".join([f"- {v}" for v in types.values()])
+            Init = parse_init(llm_output)
+                # Success → exit the construction loop
+            break
 
-    with open(os.path.join(prompt_dir, "feedback.txt")) as f:
+        except Exception as e:
+            last_error = e
+            # Go to next iteration (re-prompt/retry)
+            continue
+    
+    
+    with open(os.path.join(prompt_dir, "feedback2.txt")) as f:
         feedback_template = f.read().strip()
     feedback_prompt = feedback_template.replace('{domain_desc}', domain_desc_str)
-    feedback_prompt = feedback_prompt.replace('{type_list}', type_str)
+    feedback_prompt = feedback_prompt.replace('{init_pddl}', Init['signature'])
+    feedback_prompt = feedback_prompt.replace('{init_code}', Init['init'])
+    feedback_prompt = feedback_prompt.replace('{init_ana}', Init['raw'])
+
 
     if feedback is not None:
         if feedback.lower() == "human":
@@ -37,39 +53,34 @@ def type_extraction(llm_conn: LLM_Chat, domain_desc_str: str, feedback: str | No
                 {'role': 'user', 'content': feedback_msg}
             ]
             llm_response = llm_conn.get_response(messages=messages)
-            types = parse_types(llm_response)
-            type_str = "\n".join([f"- {v}" for v in types.values()])
-
+            llm_response = clean_llm_output(llm_response)
+            Init = parse_init(llm_response)
+    
     # Log results
-    Logger.print(f"Extracted {len(types)} types:\n", type_str)
+    PddlGenerator.set_init(Init)
+    Logger.print(f"Extracted",Init)
 
     in_tokens, out_tokens = llm_conn.token_usage()
     Logger.add_to_info(Type_Extraction_Tokens=(in_tokens, out_tokens))
 
-    return [v for v in types.values()]
+    return Init
 
-def parse_types(llm_output: str):
-    if "## Types" in llm_output:
-        header = llm_output.split("## Types")[1].split("\n## ")[0]
-    else:
-        header = llm_output
-    dot_list = combine_blocks(header)
-    if len(dot_list) == 0:
-        dot_list = "\n".join([l for l in header.split("\n") if l.strip().startswith("-")])
-    if dot_list.count("-") == 0: # No types
-        return {}
-    types = dot_list.split('\n')
-    types = [t.strip("- \n*") for t in types if t.strip("- \n*")] # Remove empty strings and dashes
-    type_dict = {}
-    for type in types:
-        name, desc = type.split(":",1) if ":" in type else (type, "")
-        name = name.strip(" *:").replace(" ", "_")
-        desc = name + ": " + desc.strip()
-        if name not in type_dict:
-            type_dict[name] = desc
-        elif len(type_dict[name]) < len(desc):
-            type_dict[name] = desc
-    return type_dict
+
+def parse_init(llm_output: str)-> Predicate:
+    try:
+        init_pddl = llm_output.split("Predicates\n")[1].split("##")[0].split("```")[-2].strip(" `\n")
+    except:
+        raise Exception("Could not find the 'Predicate' section in the output. Provide the entire response, including all headings even if some are unchanged.")
+    try:
+        init_code = llm_output.split("Initial Facts\n")[1].split("##")[0].split("```")[-2].strip(" `\n")
+    except:
+        raise Exception("Could not find the 'Initial Facts' section in the output. Provide the entire response, including all headings even if some are unchanged.")
+    try:
+        ana = llm_output.split("Problem analysis\n")[1].split("##")[0].split("```")[-2].strip(" `\n")
+    except:
+        raise Exception("Could not find the 'Problem analysis' section in the output. Provide the entire response, including all headings even if some are unchanged.")
+    
+    return {"raw": ana,"signature": init_pddl, "init": init_code}
 
 def get_llm_feedback(llm_conn: LLM_Chat, feedback_prompt: str):
     feedback_output = llm_conn.get_response(feedback_prompt)
@@ -81,5 +92,10 @@ def get_llm_feedback(llm_conn: LLM_Chat, feedback_prompt: str):
         if feedback_output.count("```") >= 2:
             feedback_output = combine_blocks(feedback_output)
         Logger.print("FEEDBACK:\n", feedback_output)
-        feedback = "## Feedback\nYou received the following feedback on the above final type selection. Address this feedback and respond with a corrected type list within a new markdown code block. Note that you cannot refer to the above solution. " + feedback_output + "\nHowever, you shouldn't create any new types that haven't been checked above unless instructed to do so."
+        feedback = "## Feedback\nYou received the following feedback. Address this feedback. Note that you cannot refer to the above solution. " + feedback_output + "\n\nPlease modify your response and ensure it matches the format of the ## Example exactly."
         return feedback
+
+def clean_llm_output(llm_output: str) -> str:
+    llm_output = llm_output.replace("```pddl", "```").replace("```PDDL", "```")
+    llm_output = llm_output.replace("```markdown", "```").replace("```lisp","```")
+    return llm_output

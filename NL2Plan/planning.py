@@ -481,6 +481,7 @@ def generate_initializable_domain(domain, problem) -> tuple[str,str]:
     return domain, problem
 
 def parse_and_update(llm_output: str, overwrite: bool = True) -> tuple[str,str]:
+    llm_output = clean_llm_output(llm_output)
     llm_output = "\n" + llm_output # Add a newline at the start to make sure the first header is found
     # Split the output into domain and problem
     domain_section = None
@@ -598,3 +599,8 @@ def get_plan_feedback(plan, llm_conn : LLM_Chat, domain_desc: str | None):
     Logger.print("FEEDBACK:\n", feedback)
 
     return feedback
+
+def clean_llm_output(llm_output: str) -> str:
+    llm_output = llm_output.replace("```pddl", "```").replace("```PDDL", "```")
+    llm_output = llm_output.replace("```markdown", "```")
+    return llm_output

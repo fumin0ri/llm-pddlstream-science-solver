@@ -1,0 +1,7 @@
+Please write a step-by-step solution method for the following problem. 
+You do not need to carry out the actual calculations; just describe the procedure for solving it.
+
+# Task
+{domain_desc}
+
+Please keep your responses concise and brief.

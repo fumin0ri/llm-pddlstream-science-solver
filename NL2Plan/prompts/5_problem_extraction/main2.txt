@@ -1,0 +1,80 @@
+# Role
+You are a PDDL expert, and your task is to define the initial state and the goal state for a PDDL problem based on a domain description and the available predicates. For the initial state specify both object instances and which predicates are true, false predicates don't have to be specified. For the goal, specify the states that need to have specific values regardless if those are true or false. Do it step-by-step and explain your thoughts. Respond with the exact headings provided. You can't assume that any object, regardless of type, already exists. Everything you wish to use should be defined here. Also, remember that any symmetrical predicates should be defined both ways.
+
+Reply using exactly the following headers:
+- "## Object Instances": The objects which exist in the domain. Each object should be within a markdown block and on its own line. The type and description should be specified.
+- "## State": List which predicates are initially true. False predicates do not need to be stated. Each predicate should be within a markdown block on its own line.
+- "## Goal": Include a single markdown code block that details the goal expression in PDDL code.
+
+Some predicates might be marked with properties. If so, these should be followed during initialization. The possible properties are:
+    - `SINGULAR()`: The predicate should only be true for one set of parameters at once across the entire problem. For example, `(robot_at ?l - location)` would be `SINGULAR()` since the robot can only be one location at a time. However, `(built ?h - house)` would not be `SINGULAR()` even though each house can only be built once since several different houses can be built at the same time.
+    - `MAXONCE(?PAR)`: The predicate should be true at most once for the parameter ?PAR. For example, `(ball_in ?b - ball ?c - cup)` would be `MAXONCE(?b)` since each ball can only be in at most one cup. Only applicable if there are two or more parameters.
+    - `SYMMETRICAL(?PAR1, ?PAR2)`: The predicate should always be used symmetrically. For example, `(connected ?i1 - intersection ?i2 - intersection)` would be `SYMMETRICAL(?i1, ?i2)` since if ?i1 is connected to ?i2 then ?i2 must also be connected to ?i1. As such, these should always be defined in both directions, `(connected ?i1 ?i2)\n(connected ?i2 ?i1)`. Only applicable if there are two or more parameters.
+A predicate can have several properties at once. However, a predicate might have a property, such as being symmetrical, without being marked as such.
+
+You must always go through the same steps and in the same level of detail as shown in the examples. Being long winded, overly detailed, or verbose is not an issue and instead encouraged.
+
+# Example
+
+## Domain and Problem
+
+Our AI agent is a computational robot that solves specific problems that require calculations and returns an answer, which must also indicate the process it followed, such as what mathematical formulas it applied.
+
+A small car of mass 800 kg starts from rest and accelerates uniformly to a speed of 20 m/s in 10 seconds on a flat road. During this time, the engine provides a constant power output, and the resistive force acting on the car is 400 N. What is the power output of the engine? (Ignore air resistance other than the 400 N resistive force.)
+
+
+## Types
+
+- object: Everything in the physical and logical system.
+    
+
+## Predicates
+
+(given ?m ?v ?t ?fr)  ; 入力値（質量・速度・時間・抵抗力）
+(accel ?a)            ; 加速度 a
+(dist ?s)             ; 変位 s
+(dke ?k)              ; 運動エネルギー変化 ΔK
+(wres ?w)             ; 抵抗に逆らう仕事 W_res
+(work ?wt)            ; 総仕事 W_total
+(power ?p)            ; 出力 P
+(answer)              ; ゴール（ストリームで直接満たす）
+
+## Object Instances
+
+We introduce a single scientist, one problem instance, and the symbolic quantities needed (no numbers):
+
+```
+m800
+v20
+t10
+fr400
+```
+
+## State
+
+We assert what is given by the problem statement (all symbolically) and which formulas are activated for the derivation:
+
+```
+(given m800 v20 t10 fr400)
+```
+
+## Goal
+
+We want the engine power expression to be derived (symbolically). We do not constrain any other facts:
+
+```
+(answer)
+```
+# Task
+This is the task you are to perform. The above only contains general instructions and examples. Apply these instructions and methods to the below, but do not further analyze the examples.
+
+## Types
+{type_hierarchy}
+
+## Predicates
+{predicates}
+
+## Domain and Problem
+{domain_desc}
+
+Please make sure your answers follow the format shown.

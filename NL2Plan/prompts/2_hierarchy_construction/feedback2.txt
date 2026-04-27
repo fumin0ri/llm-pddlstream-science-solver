@@ -1,0 +1,15 @@
+
+
+## Input
+
+Use the following input template:
+
+### Domain and Problem
+
+{domain_desc}
+
+### Hierarchy
+
+{type_hierarchy}
+
+Please reply "No feedback."

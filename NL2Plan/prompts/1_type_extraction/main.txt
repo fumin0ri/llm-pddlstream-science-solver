@@ -129,6 +129,7 @@ Combining the valid types from the two above reasoning steps, we get the followi
 
 # Task
 This is the task you are to perform. The above only contains general instructions and examples. Apply these instructions and methods to the below, but do not further analyze the examples.
+Answers must strictly follow the format in the Example.
 
 ## Domain and Problem
 {domain_desc}

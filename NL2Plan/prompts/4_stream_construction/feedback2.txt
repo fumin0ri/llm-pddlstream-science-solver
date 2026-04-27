@@ -1,0 +1,106 @@
+# Role
+
+Analyze the contents of “## Stream pddl,” “## New Predicates,” and “## Stream code” precisely. Based on the checklist below, if any corrections are required, you must point them out in the Feedback section. If you have any corrections to make, never use the words "No feedback" in your reply.
+If there are no problems, please reply with "No feedback."
+For example, in an expression like (mass ?m), “mass” is called the predicate name, and “?m” is called a variable.
+Here you cannot add any predicates to ##Available Predicates. In other words, the instruction to "add the predicate to **## Available Predicates**" is not appropriate; the correct instruction is to "remove it from the **:domain** section."
+You can only modify the contents of ### Stream pddl, ### New Predicates, and ### Stream code according to the feedback.
+Only analyze the stream given by "## Stream".
+
+# Checklist
+1:The stream name must match the name on the first line of ## Stream. Do not change the stream name arbitrarily.
+2:The Python function name must be the stream name with _py appended to it.
+3:Are all elements that appear in :domain included in :input? Also, The argument name of a Python function must match the variable name used in input, without the question mark.
+4:The :input and :domain variables must match exactly. For example, using :inputs (?m ?v ?t) together with :domain (and (mass ?m) (time ?t)) will not work; you must either use :domain (and (mass ?m) (velocity ?v) (time ?t)) or change the inputs to :inputs (?m ?t). If the Requires of a ## Stream is ‘nothing’, the input becomes :input (). If the :input is (), the :domain must be (and).
+5:The variable names in :outputs must not match the variable names of any predicates listed in ## Available Predicates. Variable names that differ only in uppercase and lowercase cannot be used across predicates. For example, (mass_a ?m) and (mass_b ?M) will cause an error, so you need to use something like (mass_a ?ma) or (mass_b ?mb) instead.
+6:Is the use of (done) appropriate? Do not certify (done) on any stream other than the last one in ## All Streams.
+7:In the :domain section, you can only use predicates in ## Available Predicates. The :domain section must be one or a combination of the available predicates. The predicate variables cannot change and must match exactly. Do not add or subtract variables.
+8:A Python function must return only concrete numerical values. It cannot return anything containing characters, and it must assign and compute with specific numerical values within the function. If no specific numerical values are provided, the function must assign appropriate numbers within the function.
+9:In the last stream of ## All Streams, you must certify the final answer in ## Domain using the predicate (answer). If it is not the last stream in ## All Streams, you must not use (answer). 
+10:PDDL does not allow  non-ASCIIcharacters such as Greek letters (λ,Δ,ρ,θ,σ,φ) and must be written using only alphanumeric characters in ## Predicates. Similarly, non-ASCII characters cannot be used in predicate variable names. In the case of λ, using lambda would make it a Python reserved word, so use something like lam instead.
+11:In the :domain section and the :certified section, if there are multiple predicates, you need to include ‘and’
+12:Is the value of (answer ?ans) in the specified unit? The variable of the predicate (answer ?ans) must be assigned a single numerical value. Moreover, you may not write it as (final_answer ?ans) or (answer_value ?ans); it must be written as (answer ?ans).
+13:The predicate variables cannot change and must match exactly. Do not add or subtract variables. You cannot use (params ?a ?b ?c) as (params ?a ?b).
+14::output () is not allowed, but :inputs () is permitted. If a Stream’s Requires is nothing, then you must specify :inputs () and :domain (and). there is no need to introduce dummy input variables such as :inputs (?dummy).
+15:In the :certified section, please create and use new predicates. Do not use any predicates from the ## Available Predicates section except for (done). The variable names in :output must exactly match the variable names in the :certified predicate.
+16:Note that only numerical values can be assigned to predicate variables; they cannot be assigned in the form of lists or dictionaries.
+17:Any predicate newly defined in :certified must be listed under ## New Predicates, and both the predicate name and the variable names must match exactly. If any predicates other than those newly defined in the :certified section appear in ## New Predicates, they must be removed.
+18:You must refer only to the stream specified in the Stream. You must not mention any other streams from ALL streams.
+The contents of the checklist take precedence over the contents of ## Stream.
+Below is an example of how to write a stream.
+
+  (:stream compute_accel
+    :inputs (?m ?v ?t ?fr) 
+    :domain (params ?m ?v ?t ?fr) ;All variables that appear in the input must be written as variables of the predicate.
+    :outputs (?a) ;Note that you cannot use the same variable names as those in the input.
+    :certified (accel ?a) ;Define the variables of the output using a new predicate.
+  )
+
+  (:stream compute_dist
+    :inputs (?a ?m ?v ?t ?fr)
+    :domain (and (accel ?a) (params ?m ?v ?t ?fr))
+    :outputs (?s)
+    :certified (dist ?s)
+  )
+
+  (:stream compute_energy
+    :inputs (?ke ?wr)
+    :domain (and (dke ?ke) (rwork ?wr))
+    :outputs (?E)
+    :certified (energy ?E)
+  )
+
+  (:stream compute_power
+    :inputs (?E ?m ?v ?t ?fr)
+    :domain (and (energy ?E) (params ?m ?v ?t ?fr))
+    :outputs (?P)
+    :certified (and (answer ?P) (done)) ;If there are multiple predicates, you need to include ‘and’
+  )
+The final stream must be: outputs (?ans) :certified (and (answer ?ans) (done)).
+
+# Task
+
+## Domain
+{domain_desc}
+
+## Init Facts
+{init_pddl}
+
+{init_code}
+
+## ALL streams
+The following is a description of all the streams that are already defined or planned to be defined within this domain.
+
+{stream_list}
+
+## Available Predicates
+{predicate_list}
+
+## Already-defined streams
+{defined_streams}
+
+## Stream
+Here, we will consider this stream within All Streams.
+
+{stream_name}
+
+{stream_desc}
+
+
+You can instruct changes through your feedback only for the content after this point; anything before this cannot be altered.
+### Stream pddl
+```
+{stream_pddl}
+```
+
+### New Predicates
+```
+{new_predicates}
+```
+
+### Stream code
+```
+{stream_code}
+```
+
+If a correction is needed, start your reply with ## Feedback and surround the content with ```. Please only specify the changes in writing and do not include the modified code. Please don't provide code examples either.

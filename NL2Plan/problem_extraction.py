@@ -38,7 +38,7 @@ def problem_extraction(
     if messages is None:
         predicate_str = "\n".join([f"- {pred['signature']}: {pred['desc']}" for pred in predicates])
 
-        with open(os.path.join(prompt_dir, "main.txt")) as f:
+        with open(os.path.join(prompt_dir, "main2.txt")) as f:
             goal_state_extr_template = f.read().strip()
         goal_state_extr_prompt = goal_state_extr_template.replace('{domain_desc}', domain_desc_str)
         goal_state_extr_prompt = goal_state_extr_prompt.replace('{type_hierarchy}', str(type_hierarchy))
@@ -83,9 +83,10 @@ def problem_extraction(
         PddlGenerator.set_objects(objects_str)
         PddlGenerator.set_goal("(and)") # Set an empty goal to avoid errors
         PddlGenerator.generate()
+        """
         errors = problem_errors(PddlGenerator.problem_file, PddlGenerator.domain_file)
         if errors is not None:
-            raise ValueError(errors)
+            raise ValueError(errors)"""
     except ValueError as error:
         Logger.print(f"Error during object construction ({remaining_attempts} attempts left):\n{error}")
         if remaining_attempts <= 1: # Should only need == 1, but just in case
@@ -105,9 +106,10 @@ def problem_extraction(
         PddlGenerator.set_init(state_str)
         PddlGenerator.set_goal("(and)") # Set an empty goal to avoid errors
         PddlGenerator.generate()
+        """
         errors = problem_errors(PddlGenerator.problem_file, PddlGenerator.domain_file)
         if errors is not None:
-            raise ValueError(errors)
+            raise ValueError(errors)"""
     except ValueError as error:
         Logger.print(f"Error during state construction ({remaining_attempts} attempts left):\n{error}")
         if remaining_attempts <= 1: # Should only need == 1, but just in case
@@ -126,9 +128,10 @@ def problem_extraction(
         goal_str = parse_goal(llm_output, type_hierarchy, predicates, objects, check_errors=False)
         PddlGenerator.set_goal(goal_str)
         PddlGenerator.generate()
+        """
         errors = problem_errors(PddlGenerator.problem_file, PddlGenerator.domain_file)
         if errors is not None:
-            raise ValueError(errors)
+            raise ValueError(errors)"""
     except ValueError as error:
         Logger.print(f"Error during goal construction ({remaining_attempts} attempts left):\n{error}")
         if remaining_attempts <= 1: # Should only need == 1, but just in case
@@ -162,6 +165,7 @@ def problem_extraction(
             feedback_msg = get_llm_feedback(llm_conn, type_hierarchy, predicates, domain_desc_str, objects_str, state_str, goal_str)
         Logger.print("Received feedback:\n", feedback_msg)
         PddlGenerator.generate()
+        """
         error_msg = problem_errors(PddlGenerator.problem_file, PddlGenerator.domain_file)
         if error_msg is not None:
             Logger.print("Error in the generated problem:\n", error_msg)
@@ -176,7 +180,7 @@ def problem_extraction(
                 predicates=predicates, messages=messages, error=feedback_msg,
                 remaining_attempts=max_attempts, shorten_message=shorten_message,
                 feedback=None, revise_problem_iters=revise_problem_iters, max_attempts=max_attempts
-            ) # Note that we reset the remaining attempts here, but disable feedback
+            ) # Note that we reset the remaining attempts here, but disable feedback"""
 
     domain = PddlGenerator.get_domain()
     problem = PddlGenerator.get_problem()
@@ -194,6 +198,7 @@ def problem_extraction(
         revisions = problem_revision(llm_conn, revision_template, problem_revision_error)
         PddlGenerator.overwrite_problem(revisions)
 
+        """
         errors = problem_errors(PddlGenerator.problem_file, PddlGenerator.domain_file)
         if errors is not None:
             Logger.print(f"Failed to parse revised problem:\n{errors}. Retrying iteration {revise_problem_iters}.", subsection=False)
@@ -209,7 +214,7 @@ def problem_extraction(
         state_str = None
         objects_str = None
         objects = None
-        break
+        break"""
 
     in_tokens, out_tokens = llm_conn.token_usage()
     Logger.add_to_info(Problem_Extraction_Tokens=(in_tokens, out_tokens))

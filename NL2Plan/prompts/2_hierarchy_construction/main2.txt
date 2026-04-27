@@ -1,0 +1,86 @@
+# 🔬 Scientific Type Hierarchy Prompt
+
+## Role
+
+You are a **PDDL expert for scientific/laboratory domains** (chemistry, physics, biology, materials science, instrumentation).
+Your task is to **organize a dependency tree (type hierarchy)** for a PDDL domain model describing a scientific problem or experiment.
+Each type appears **only once** in the tree. A subtype must be a **more specific kind** of its parent type (conceptual specialization), **not** something physically contained by it.
+
+**Do not attempt to solve the task**; only extract and organize types.
+You **may** introduce new **meta types** (for organization), but **must not** introduce any **new leaf types** beyond those provided.
+Start the hierarchy with `object` and make everything a subtype of `object`.
+
+
+## Method (to follow before producing the tree)
+
+### 1) Analyze Type Usages (Scientific Context)
+
+For each provided type, infer how it would be used in a scientific PDDL model:
+
+* **Materials & Samples**: reagents, solutions, solids, gases, mixtures, biological samples.
+* **Containers & Vessels**: beaker, flask, test_tube, well_plate; generalize under *container* if needed.
+* **Instruments & Apparatus**: heater, balance, pipette, centrifuge, spectrometer; generalize under *instrument* if needed.
+* **Locations & Stations**: bench, fume_hood, incubator_chamber; generalize under *location* if needed.
+* **Agents (Embodied only)**: robot_arm, pipetting_robot (allowed); human/AI planners that aren’t embodied should **not** be modeled here.
+* **Other conceptual entities** that act as **kinds** (not actions/properties/states).
+
+Exclude things that are better modeled as **actions** (heating, mixing), **states/properties** (temperature, sterile, dissolved), or **relations** (contained_in, connected_to).
+
+### 2) Identify Commonalities & Metatypes
+
+Cluster types with shared experimental roles and introduce **only meta types** when it clarifies structure, e.g.:
+
+* *material* → {solid, liquid, gas, solution, reagent, buffer, culture}
+* *container* → {beaker, flask, vial, test_tube, well}
+* *instrument* → {heater, balance, pipette, centrifuge}
+* *location* → {bench, hood, incubator, cold_room}
+* *biological_entity* → {cell_line, bacteria, enzyme}
+* *embodied_agent* → {robot_arm, pipetting_robot}
+* *experimental_component* (for items built/assembled but not mere states)
+
+Only add such **meta types** if they help place multiple provided types under a common parent.
+
+### 3) Resolve Ambiguities
+
+* If two types stand in a clear **is-a** relation, place the specific one under the general one.
+* If a type is actually an **action/state/property**, **do not** include it; but since you cannot delete provided leaf types, place only the valid types; leave invalid ones out of the tree.
+* If a type could belong to several parents, choose the **most appropriate single parent** based on scientific role and expected PDDL usage (e.g., *micropipette* → instrument, not container).
+
+### 4) Build the Tree (Output Format)
+
+Respond **only** with the hierarchy tree under the header `## Hierarchy`, inside a Markdown code block.
+Begin with `object`, then indent subtypes. Provide **concise role blurbs** as in the examples.
+**Do not create new leaf types.** Creating **new meta types** is allowed.
+
+## Output Format (must match exactly)
+
+* Header: `### Hierarchy`
+* Then a Markdown code block containing the tree.
+* Root node: `object`
+* Indentation and brief descriptions similar to prior examples.
+
+###Example
+
+### Hierarchy
+```
+- object: Object is always root, everything is an object
+    - floor: Different levels in the building, numbered 1 to 5.
+    - movable: Types that can move between floors.
+        - elevator: Elevators that can transport people between floors.
+        - person: Individuals like Bob and Sally who need to travel between floors.
+    - building: The building that contains floors and elevators.
+```
+
+## Task
+
+Apply the above to the given scientific domain.
+Note that each level of indentation is one tab.
+
+### Domain and Problem
+
+{domain_desc}
+
+### Types
+
+The types are:
+{type_list}

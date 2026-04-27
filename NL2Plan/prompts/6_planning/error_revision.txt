@@ -16,3 +16,4 @@ Address the following and any other errors:
 {errors}
 
 You must respond with the "# Domain" and "# Problem" headings. Before those, however, reason about the possible cause of the error(s) and suggest how they could be corrected under the following "# Analysis" header.
+You must adhere to this format.

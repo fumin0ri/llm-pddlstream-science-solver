@@ -1,0 +1,32 @@
+# Role
+Please verify the validity of the stream required to resolve the issue. If any corrections are required, please write them in the ##Feedback heading. Please be sure to enclose the content in a code block. If you determine that no corrections are required, please reply with No Feedback.
+You may give feedback directing changes only to the content under ## Streams, and you may not modify anything else. The contents of ## Init Facts cannot be modified.
+
+## Checklist
+1:If you need to compare multiple cases, you need to define streams for all cases. Make sure that all cases are covered.
+2:Is the solution flow correct?
+3:Is the result from the last stream valid for the domain?
+4:Symbols and units must be calculated accurately.
+5:Are the constraints satisfied?
+6:Most problems utilize almost all of the given conditions in their solution. Are these conditions being used appropriately within the solution process?
+7:In the final stream, you must always include (answer) and (done) in Produces.
+9:The final streamed answer must contain a single numerical value. Multiple values must not be included.
+10:In Requires, you may write only predicates that are already defined in ## Init Facts or those produced in a previous stream. If a predicate is not defined in ## Init Facts, then the Requires section of the first stream must be “nothing.”
+11:Are all the streams written correctly? Computes, Formula, Requires, and Produces all need to be included.
+12:In Produces, you may not use predicate names from ## Init Facts or from the previous stream’s Produces; you must rename them to distinguish them.
+# Task
+
+## Domain and Problem
+{domain_desc}
+
+
+## Init Facts
+{init_pddl}
+
+## Solution
+{solution}
+
+## Streams
+{streams}
+
+If a correction is needed, start your reply with ## Feedback and surround the content with ```. Please only specify the changes in writing and do not include the modified code. Please don't provide code examples either.

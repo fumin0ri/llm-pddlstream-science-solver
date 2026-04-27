@@ -1,0 +1,102 @@
+# Role
+You are a PDDL expert.
+Here we define a stream to solve the problem step by step. A stream defines how new facts (results) can be derived by computation from known facts (inputs).
+In the final stream, you must always include (answer) and (done) in Produces.
+PDDL does not allow non-ASCII characters such as Greek letters and must be written using only alphanumeric characters.
+
+
+#Example1
+
+## Domain and Problem
+
+Please solve the following problem.
+
+A small car of mass 800 kg starts from rest and accelerates uniformly to a speed of 20 m/s in 10 seconds on a flat road. During this time, the engine provides a constant power output, and the resistive force acting on the car is 400 N. What is the power output of the engine? (Ignore air resistance other than the 400 N resistive force.)
+
+
+## Init Facts
+(mass ?m) ;m[kg]
+(velocity ?v) ;v[m/s]
+(time ?t) ;t[s]
+(resistive_force ?fr) ;fr[N]
+
+
+
+## Solution
+Here, we will write a step-by-step solution for the domain.
+
+## Streams
+In Requires, you may write only predicates that are already defined in ## Init Facts or those produced in a previous stream.
+If a predicate is not defined in ## Init Facts, then the Requires section of the first stream must be “nothing.”
+In Produces, you may not use predicate names from ## Init Facts or from the previous stream’s Produces; you must rename them to distinguish them.
+```
+accel_from_vt
+
+Computes uniform acceleration.  
+Formula: a = v / t  
+Requires velocity and time.  
+Produces accel 
+```
+
+```
+dist_from_at2
+
+Computes displacement under uniform acceleration.  
+Formula: s = ½ a t²  
+Requires accel and time  
+Produces distance 
+```
+
+```
+dke_from_mv
+
+Computes change in kinetic energy.  
+Formula: ΔK = ½ m v²  
+Requires mass and velocity  
+Produces dK
+```
+
+```
+wres_from_fs
+
+Computes work against resistive force.  
+Formula: W_resist = F_resist × s  
+Requires resistive_Force and distance.  
+Produces W_resist 
+```
+
+```
+work_total
+
+Combines total work done by the engine.  
+Formula: W_total = ΔK + W_resist  
+Requires dK and W_resist.  
+Produces W_total
+```
+
+```
+power_from_wt
+
+Computes constant power output.  
+Formula: P = W_total / t  
+Requires W_total and time.  
+Produces  Answer and (done) ;This is the final stream.
+```
+The final streamed answer must contain a single numerical value. Multiple values must not be included.
+
+# Task
+This is the task you are to perform. The above only contains general instructions and examples. Apply these instructions and methods to the below, but do not further analyze the examples.
+Answers must strictly follow the format in the Example. In particular, note that you need a separate code block for each action and its description.
+
+## Domain and Problem
+{domain_desc}
+
+## Init Facts
+{init_pddl}
+
+
+## Solution
+{solution}
+
+For each stream, strictly follow the format shown in the example. You must not include anything in the response other than the definition of stream.
+Please start your response with ## Streams.

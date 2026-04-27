@@ -60,7 +60,7 @@ class PDDL_Syntax_Validator:
                 continue # We don't need to check the code block if the header is missing
             if not header in llm_output:
                 header = header.replace('\n###', '\n####') # We know one of the two is present, so we can just switch the two
-            if llm_output.split(f"{header}")[1].split("##")[0].count('```\n') < 2:
+            if llm_output.split(f"{header}")[1].split("##")[0].count('```') < 2:
                 feedback_message = f'The header `{header}` is missing a formalised code block. Please include a "```" block in the `{header}` section.'
                 errors.append([False, 'header_specification', header, feedback_message])
         if len(errors) > 0:
@@ -108,11 +108,11 @@ class PDDL_Syntax_Validator:
                 continue
             if not heading in llm_output:
                 heading = heading.replace('\n###', '\n####') # We know one of the two is present, so we can just switch the two
-            if not "```\n" in llm_output.split(heading)[1]:
+            if not "```" in llm_output.split(heading)[1]:
                 errors.append([False, 'code_not_found', None, f'The header `{heading.strip()}` is missing a formalised code block. Please include a "```" block in the `{heading.strip()}` section.'])
                 continue
 
-            content = llm_output.split(heading)[1].split("```\n")[1].strip()
+            content = llm_output.split(heading)[1].split("```")[1].strip()
             # remove comments
             content = "\n".join([line.split(";")[0] for line in content.split("\n") if line.strip() != ""])
 
@@ -148,7 +148,7 @@ class PDDL_Syntax_Validator:
             listing a large number of predicates in preconditions and effects)
         """
         assert 'Preconditions' in llm_output, llm_output
-        precond_str = llm_output.split('Preconditions')[1].split('```\n')[1].strip(" `\n:")
+        precond_str = llm_output.split('Preconditions')[1].split('```')[1].strip(" `\n:")
         if len(precond_str.split('\n')) > self.messed_output_len:
             feedback_message = f'You seem to have generated an action model with an unusually long list of preconditions. Please include only the relevant preconditions/effects and keep the action model concise.'
             return False, 'messed_output_feedback', None, feedback_message
@@ -403,7 +403,7 @@ class PDDL_Syntax_Validator:
             errors.append([False, 'invalid_predicate_usage', None, feedback_message])
         else:
             header = '\n### Action Preconditions' if '\n### Action Preconditions' in llm_output else '\n#### Action Preconditions'
-            if llm_output.split(header)[1].split("\n### ")[0].count('```\n') < 2:
+            if llm_output.split(header)[1].split("\n### ")[0].count('```') < 2:
                 # no preconditions, probably.
                 feedback_message = f'No PDDL expression was found in the "### Action Preconditions" heading. Please include the precondition within a markdown code block.'
                 errors.append([False, 'invalid_predicate_usage', None, feedback_message])
@@ -413,7 +413,7 @@ class PDDL_Syntax_Validator:
             errors.append([False, 'invalid_predicate_usage', None, feedback_message])
         else:
             header = '\n### Action Effects' if '\n### Action Effects' in llm_output else '\n#### Action Effects'
-            if llm_output.split(header)[1].split("\n### ")[0].count('```\n') < 2:
+            if llm_output.split(header)[1].split("\n### ")[0].count('```') < 2:
                 # no effects, probably.
                 feedback_message = f'No PDDL expression was found in the "### Action Effects" heading. Please include the effect within a markdown code block.'
                 errors.append([False, 'invalid_predicate_usage', None, feedback_message])
@@ -425,7 +425,7 @@ class PDDL_Syntax_Validator:
         # check preconditions
         try:
             header = '\n### Action Preconditions' if '\n### Action Preconditions' in llm_output else '\n#### Action Preconditions'
-            precond_str = llm_output.split(header)[1].split("\n###")[0].split('```\n')[1].strip()
+            precond_str = llm_output.split(header)[1].split("\n###")[0].split('```')[1].strip()
             precond_str = precond_str.replace('\n', ' ').replace('(', ' ( ').replace(')', ' ) ')
             pre_result = self._check_predicate_usage_pddl(precond_str, curr_predicates, params_info, part='preconditions', type_generalization=generalize_predicate_types)
 
@@ -441,7 +441,7 @@ class PDDL_Syntax_Validator:
         # check effects
         try:
             header = '\n### Action Effects' if '\n### Action Effects' in llm_output else '\n#### Action Effects'
-            eff_str = llm_output.split(header)[1].split("\n###")[0].split('```\n')[1].strip()
+            eff_str = llm_output.split(header)[1].split("\n###")[0].split('```')[1].strip()
             eff_str = eff_str.replace('\n', ' ').replace('(', ' ( ').replace(')', ' ) ')
             eff_result = self._check_predicate_usage_pddl(eff_str, curr_predicates, params_info, part='effects', type_generalization=generalize_predicate_types)
 

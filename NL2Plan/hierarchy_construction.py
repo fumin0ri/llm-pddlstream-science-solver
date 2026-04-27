@@ -231,7 +231,7 @@ def hierarchy_construction(
     types = [type.split(":",1)[0].replace(" ", "_") + ":" + type.split(":",1)[1] if ":" in type else type for type in types] # replace spaces with underscores in names
 
     if not also_create_types:
-        with open(os.path.join(prompt_dir, 'main.txt')) as f:
+        with open(os.path.join(prompt_dir, 'main2.txt')) as f:
             hierarchy_prompt = f.read().strip()
     if also_create_types:
         with open(os.path.join(prompt_dir, 'main_with_creation.txt')) as f:
@@ -242,6 +242,7 @@ def hierarchy_construction(
     hierarchy_prompt = hierarchy_prompt.replace('{domain_desc}', domain_desc if domain_desc is not None else "No description available")
 
     llm_output = llm_conn.get_response(prompt=hierarchy_prompt)
+    llm_output = clean_llm_output(llm_output)
 
     # Process LLM output
     hierarchy = parse_hierarchy(llm_output)
@@ -263,7 +264,7 @@ def hierarchy_construction(
                 hierarchy.replace_comments({t.split(':',1)[0]: t.split(":",1)[1] for t in types if ":" in t})
 
             if not also_create_types:
-                with open(os.path.join(prompt_dir, 'feedback.txt')) as f:
+                with open(os.path.join(prompt_dir, 'feedback2.txt')) as f:
                     feedback_prompt = f.read().strip()
             if also_create_types:
                 with open(os.path.join(prompt_dir, 'feedback_with_creation.txt')) as f:
@@ -362,3 +363,8 @@ def get_llm_feedback(llm_conn: LLM_Chat, feedback_prompt: str):
         feedback_output = "## Feedback" + feedback_output + "\nStart with a \"## Response\" header, then respond with the entire hierarchy below a \"## Hierarchy\" header as before."
         feedback_output += "\n\n## Response\n"
         return feedback_output
+
+def clean_llm_output(llm_output: str) -> str:
+    llm_output = llm_output.replace("```pddl", "```").replace("```PDDL", "```")
+    llm_output = llm_output.replace("```markdown", "```")
+    return llm_output
