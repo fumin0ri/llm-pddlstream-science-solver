@@ -1,1 +1,0 @@
-Today we have six packages to handle. Two packages are located in the central hub of Duran and need to be delivered to the business district in Colin. The other four packages are in Arac’s storage: 1 should go to Bay Avenue in Jena and 3 to Pine Street in Betar. The plane is currently in Arac’s airport, and each city has its own truck and airport.

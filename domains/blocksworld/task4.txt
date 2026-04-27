@@ -1,1 +1,0 @@
-At the moment the red block is on the green, which is on the table, while the blue block is on the yellow, which is also on the table. I want the yellow block placed on the red and the green placed on the blue.

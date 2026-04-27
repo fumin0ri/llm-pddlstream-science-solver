@@ -1,1 +1,0 @@
-At the moment there are seven cards in the game. The first, third and seventh cards can discard or cycle. The fourth can cycle. The sixth can be used to discard. The remainder have no abilities.

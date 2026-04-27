@@ -51,7 +51,7 @@ def main():
         tasks = json.load(f)
 
     # ループ処理
-    for i, task_item in enumerate(tasks[94:],start=94):
+    for i, task_item in enumerate(tasks):
         current_args = copy.deepcopy(args)
         
         problem_text = task_item.get("problem_text")

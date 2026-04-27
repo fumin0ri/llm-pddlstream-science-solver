@@ -1,1 +1,0 @@
-Now the blocks are ordered blue on red on yellow. I want you to move them so that the blue is directly on top of yellow.

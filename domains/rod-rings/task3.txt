@@ -1,1 +1,0 @@
-On the first rod there are three rings, 1 to 3, with 1 on the top and 3 on the bottom. The second rod has two rings, ring 4 above ring 5. You're holding a sixth ring. The goal is to invert the order of the first rod.

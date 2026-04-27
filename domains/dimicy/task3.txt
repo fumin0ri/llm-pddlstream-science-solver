@@ -1,1 +1,0 @@
-There are currently five cards in the deck. The first card can discard, the second can mill, the third can cycle or discard, the fourth can discard and the fifth has no ability.

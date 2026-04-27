@@ -1,1 +1,0 @@
-The AI system is controlling a party of adventurers in a dungeon containing weapons, monsters and traps. The adventurers can't leave rooms with monsters and most can't enter rooms with traps. However, they can give weapons to each other and an adventurer with a weapon they can use, may defeat a monster in their room, breaking the weapon. 

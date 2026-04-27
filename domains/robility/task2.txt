@@ -1,1 +1,0 @@
-The grid is currently 3 by 3. The robot starts in the top right corner. There are walls along the entire second column and the entire second row. The goal is for the robot to reach the bottom left.

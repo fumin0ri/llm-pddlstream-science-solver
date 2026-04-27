@@ -1,1 +1,0 @@
-There are currently two rods but seven rings. Rod 1 has ring 1 to the left, ring 2 in the center and ring 3 to the right. Rod 2 is the same but for rings 4 to 6. You're holding ring 7. I want you to re-organize the rings such that ring 1 is directly to the left of ring 4, and that ring 6 is directly to the right of ring 3.

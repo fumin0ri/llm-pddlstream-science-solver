@@ -1,1 +1,0 @@
-At the moment there are four pools organized such that pool L, pool R and pool D are each connected to pool C. Pool C contains piranhas which are a bad fish. Pool L and pool R contain koi, a nice fish. The goal is to collect all koi in pool D and all piranhas in pool C. 

@@ -1,1 +1,0 @@
-Your task is to manage the movement of fish between connected pools. Each pool can house multiple types of "nice" fish, but "bad" fish cannot share a pool with any others. All fish of the same type within a pool must always be moved together.

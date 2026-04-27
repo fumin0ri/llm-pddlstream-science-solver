@@ -1,9 +1,0 @@
-Please toggle lamp_1 on and humidifier_1 off starting from the following state:
-
-- cabinet_1 is not opened
-- lamp_1 in/on side_table_1
-- lamp_1 is turned off
-- humidifier_1 in/on side_table_1
-- humidifier_1 is turned on
-- robot at cabinet_1
-- robot is holding mug_1

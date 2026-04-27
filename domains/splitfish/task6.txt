@@ -1,1 +1,0 @@
-In this task, there are five pools. Pool 1-4 are connected in a circle, with pool O being connected only to pool 1. Pool 1 and pool 3 initially contain nice koi and clownfish respectively. Pool 2 and pool 4 instead contain bad piranhas and lionfish respectively. I want you to move the clownfish to pool 1 and the koi to pool 3

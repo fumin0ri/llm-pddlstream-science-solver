@@ -1,1 +1,0 @@
-In this game, you manipulate rings on rods. You can push the ring you're holding onto either end of a rod, causing the ring at the opposite end to fall off, which then becomes the next ring you hold.

@@ -1,1 +1,0 @@
-The robot is currently acting in a 5 by 4 grid. It starts at the top right and the goal is for it to reach the bottom left. There are walls along the entire second and fourth rows. 

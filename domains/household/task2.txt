@@ -1,6 +1,0 @@
-You should put pan_1 on stove_1. You start from the following state:
-
-- pan_1 in/on cabinet_1
-- robot at fridge
-- cabinet_1 is not opened
-- robot is not holding anything
