@@ -1,0 +1,3 @@
+[submodule "external/pddlstream"]
+	path = external/pddlstream
+	url = https://github.com/caelan/pddlstream.git
