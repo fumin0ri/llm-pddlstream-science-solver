@@ -1,4 +1,5 @@
 import os
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -12,6 +13,40 @@ DOWNWARD_DIR = PDDLSTREAM_DIR / "downward"
 def run(command: list[str], cwd: Path | None = None) -> None:
     print(f"+ {' '.join(command)}")
     subprocess.run(command, cwd=cwd, check=True)
+
+
+def ensure_downward_release_build() -> None:
+    translate_dir = DOWNWARD_DIR / "builds" / "release" / "bin" / "translate"
+    if translate_dir.exists():
+        print(f"Fast Downward already appears to be built at {translate_dir}")
+        return
+
+    try:
+        run([sys.executable, "build.py"], cwd=DOWNWARD_DIR)
+    except subprocess.CalledProcessError:
+        build_downward_with_cmake_policy()
+
+
+def build_downward_with_cmake_policy() -> None:
+    cmake = shutil.which("cmake")
+    if not cmake:
+        raise FileNotFoundError("cmake was not found while building Fast Downward.")
+
+    build_dir = DOWNWARD_DIR / "builds" / "release"
+    build_dir.mkdir(parents=True, exist_ok=True)
+
+    run(
+        [
+            cmake,
+            "-G",
+            "Unix Makefiles",
+            "-DCMAKE_BUILD_TYPE=Release",
+            "-DCMAKE_POLICY_VERSION_MINIMUM=3.5",
+            "../../src",
+        ],
+        cwd=build_dir,
+    )
+    run([cmake, "--build", "."], cwd=build_dir)
 
 
 def main() -> None:
@@ -28,11 +63,7 @@ def main() -> None:
     if not DOWNWARD_DIR.exists():
         raise FileNotFoundError(f"Fast Downward checkout is missing at {DOWNWARD_DIR}")
 
-    build_dir = DOWNWARD_DIR / "builds"
-    if not build_dir.exists() or not any(build_dir.iterdir()):
-        run([sys.executable, "build.py"], cwd=DOWNWARD_DIR)
-    else:
-        print(f"Fast Downward already appears to be built at {build_dir}")
+    ensure_downward_release_build()
 
     print("PDDLStream setup complete.")
 

@@ -2,6 +2,7 @@ import json
 import math
 import os
 import re
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -85,11 +86,16 @@ def ensure_downward_build(repo_dir: Path) -> None:
     except FileNotFoundError:
         pass
 
-    subprocess.run(
-        [sys.executable, "build.py"],
-        cwd=downward_dir,
-        check=True,
-    )
+    try:
+        subprocess.run(
+            [sys.executable, "build.py"],
+            cwd=downward_dir,
+            check=True,
+        )
+    except subprocess.CalledProcessError:
+        build_downward_with_cmake_policy(downward_dir)
+
+    get_downward_translate_path(repo_dir)
 
 
 def run_generated_program(result_dir: Path, repo_dir: Path) -> dict[str, Any]:
@@ -131,6 +137,33 @@ def get_downward_translate_path(repo_dir: Path) -> Path:
     raise FileNotFoundError(
         f"Could not find Fast Downward translate directory under {downward_dir}. "
         "Run scripts/setup_pddlstream.py first."
+    )
+
+
+def build_downward_with_cmake_policy(downward_dir: Path) -> None:
+    cmake = shutil.which("cmake")
+    if not cmake:
+        raise FileNotFoundError("cmake was not found while building Fast Downward.")
+
+    build_dir = downward_dir / "builds" / "release"
+    build_dir.mkdir(parents=True, exist_ok=True)
+
+    subprocess.run(
+        [
+            cmake,
+            "-G",
+            "Unix Makefiles",
+            "-DCMAKE_BUILD_TYPE=Release",
+            "-DCMAKE_POLICY_VERSION_MINIMUM=3.5",
+            "../../src",
+        ],
+        cwd=build_dir,
+        check=True,
+    )
+    subprocess.run(
+        [cmake, "--build", "."],
+        cwd=build_dir,
+        check=True,
     )
 
 
