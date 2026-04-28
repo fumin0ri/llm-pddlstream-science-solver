@@ -92,7 +92,10 @@ def ensure_downward_build(repo_dir: Path) -> None:
 
 def run_generated_program(result_dir: Path, repo_dir: Path) -> dict[str, Any]:
     env = os.environ.copy()
-    pythonpath_entries = [str(repo_dir)]
+    pythonpath_entries = [
+        str(get_downward_translate_path(repo_dir)),
+        str(repo_dir),
+    ]
     if env.get("PYTHONPATH"):
         pythonpath_entries.append(env["PYTHONPATH"])
     env["PYTHONPATH"] = os.pathsep.join(pythonpath_entries)
@@ -117,7 +120,25 @@ def run_generated_program(result_dir: Path, repo_dir: Path) -> dict[str, Any]:
     }
 
 
+def get_downward_translate_path(repo_dir: Path) -> Path:
+    downward_dir = repo_dir / "downward" / "builds"
+    for release_name in ("release", "release64", "release32"):
+        candidate = downward_dir / release_name / "bin" / "translate"
+        if candidate.exists():
+            return candidate
+    raise FileNotFoundError(
+        f"Could not find Fast Downward translate directory under {downward_dir}. "
+        "Run scripts/setup_pddlstream.py first."
+    )
+
+
 def extract_expected_answer(task_item: dict[str, Any]) -> float | None:
+    for key in ("answer_number", "answer", "answer_latex"):
+        if key in task_item:
+            value = extract_first_numeric(task_item[key])
+            if value is not None:
+                return value
+
     candidates = []
     collect_answer_candidates(task_item, candidates)
     for candidate in candidates:
