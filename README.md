@@ -209,13 +209,4 @@ This project taught me a lot about the gap between natural-language reasoning an
 - Performance depends strongly on the quality of the stream-level solution generated in Step 2.
 - The implementation is specialized for the SciBench-style workflow in this repository, not a general-purpose theorem prover or universal science solver.
 
-## Thesis Context
 
-This repository accompanies my undergraduate thesis on combining LLMs and `PDDLStream` for scientific problem solving. The thesis was written in Japanese, while this repository is maintained in English so the implementation and evaluation can be understood more easily by a broader audience.
-
-If you are viewing this as a portfolio project, the parts I would especially highlight are:
-
-- designing a multi-stage LLM pipeline rather than relying on one-shot prompting,
-- generating executable symbolic artifacts from natural language,
-- integrating `PDDLStream` and `Fast Downward` into an end-to-end evaluation loop, and
-- building automatic grading and reproducibility tooling around the generated programs.
