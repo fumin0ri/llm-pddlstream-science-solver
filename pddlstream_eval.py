@@ -51,7 +51,7 @@ def evaluate_task_result(
             evaluation["correct"] = math.isclose(
                 predicted,
                 expected,
-                rel_tol=1e-2,
+                rel_tol=5e-3,
                 abs_tol=1e-3,
             )
         else:
