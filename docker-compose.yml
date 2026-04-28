@@ -1,7 +1,7 @@
 services:
-  nl2plan:
+  science-solver:
     env_file: '.env'
-    image: nl2plan
+    image: science-solver
     privileged: true # Required for running Apptainer on some systems
     user: "${UID}:${GID}" # User is configured in .env file. If you encounter permission issues, try to remove this line
     build:
@@ -10,7 +10,5 @@ services:
     volumes:
       - './domains:/ws/domains'
       - './results:/ws/results'
-      - './pddl0-results:/ws/pddl0-results'
-      - './NL2Plan:/ws/NL2Plan'
-      - './PDDL0:/ws/PDDL0'
+      - './science_solver:/ws/science_solver'
       - './main.py:/ws/main.py'

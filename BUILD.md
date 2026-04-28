@@ -1,5 +1,5 @@
-# Building NL2Plan Without Docker
-The following are instructions on how to use NL2Plan without Docker. However, we generally recommend that you use Docker as it's simpler. For instructions on how to use Docker, see [the main README](./README.md).
+# Building science_solver Without Docker
+The following are instructions on how to use science_solver without Docker. However, we generally recommend that you use Docker as it's simpler. For instructions on how to use Docker, see [the main README](./README.md).
 
 These instructions assume that you're using Linux or WSL. They've been tested on Ubuntu 22.04 and might require adaptations for other Linux versions.
 
@@ -10,8 +10,8 @@ You can set up a Python environment using either [Conda](https://conda.io) or [v
 
 **Conda**
 ```
-conda create -n NL2Plan python=3.11
-conda activate NL2Plan
+conda create -n science-solver python=3.11
+conda activate science-solver
 pip install -r requirements.txt
 ```
 
@@ -25,14 +25,14 @@ pip install -r requirements.txt
 These environments can then be exited with `conda deactivate` and `deactivate` respectively. The instructions below assume that a suitable environment is active.
 
 ## Api Key
-NL2Plan requires access to an LLM. The easiest option is to use OpenAI's GPT models. For this, specify your API key in the `OPENAI_API_KEY` environmental variable.
+science_solver requires access to an LLM. The easiest option is to use OpenAI's GPT models. For this, specify your API key in the `OPENAI_API_KEY` environmental variable.
 ```
 export OPENAI_API_KEY='YOUR-KEY' # e.g. OPENAI_API_KEY='sk-123456'
 ```
-Note that this must be done in each terminal you intend to use NL2Plan in.
+Note that this must be done in each terminal you intend to use science_solver in.
 
 ## Fast Downward
-NL2Plan uses the [Fast Downward](https://github.com/aibasel/downward) planning system. To set it up, run the following from the root of this repo.
+science_solver uses the [Fast Downward](https://github.com/aibasel/downward) planning system. To set it up, run the following from the root of this repo.
 
 ```
 # Install dependencies
@@ -44,7 +44,7 @@ git clone https://github.com/aibasel/downward.git
 ```
 
 ## Validators
-NL2Plan uses three validators. All of these must be placed within [this directory](./). If you run the following commands from the root of this directory, they will be correctly placed.
+science_solver uses three validators. All of these must be placed within [this directory](./). If you run the following commands from the root of this directory, they will be correctly placed.
 
 ### cpddl
 Running [cpddl](https://gitlab.com/danfis/cpddl) requires Apptainer. Install it if not already installed:

@@ -2,12 +2,12 @@ from os import path
 
 # Main directories
 utils_dir = path.dirname(path.realpath(__file__))
-nl2plan_dir = path.dirname(utils_dir)
-root_dir = path.dirname(nl2plan_dir)
+science_solver_dir = path.dirname(utils_dir)
+root_dir = path.dirname(science_solver_dir)
 results_dir = path.join(root_dir, 'results')
 
 # Prompts
-prompt_dir = path.join(nl2plan_dir, 'prompts')
+prompt_dir = path.join(science_solver_dir, 'prompts')
 initial_facts_extraction_prompts = path.join(prompt_dir, '1_initial_facts_extraction')
 stream_extraction_prompts = path.join(prompt_dir, '3_stream_extraction')
 stream_construction_prompts = path.join(prompt_dir, '4_stream_construction')
