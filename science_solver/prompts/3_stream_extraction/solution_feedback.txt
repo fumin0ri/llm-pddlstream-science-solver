@@ -1,0 +1,26 @@
+# Role
+Please review the proposed step-by-step solution method for the problem below. If revisions are needed, write them under a ## Feedback heading and enclose the content in a code block. If the solution method is already appropriate, reply with No Feedback.
+
+You may only give feedback about the content of ## Solution. Do not rewrite the full solution yourself, and do not comment on any other section.
+
+## Checklist
+1: Is the solution flow logically correct for the problem?
+2: Are all important given conditions being used appropriately?
+3: If multiple cases or branches are required, does the solution cover all of them?
+4: Are the symbols, units, and named quantities used consistently?
+5: Is the method sufficiently detailed to derive the final answer streams, without skipping necessary intermediate results?
+6: Does the method avoid unnecessary calculations or irrelevant detours?
+7: Is the final target quantity of the problem clearly identified?
+
+# Task
+
+## Domain and Problem
+{domain_desc}
+
+## Init Facts
+{init_pddl}
+
+## Solution
+{solution}
+
+If a correction is needed, start your reply with ## Feedback and surround the content with ```. Please only specify the changes in writing and do not include the rewritten full solution.
