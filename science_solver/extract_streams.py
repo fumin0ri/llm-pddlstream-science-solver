@@ -1,12 +1,12 @@
 import os
 
-from .utils.paths import stream_extraction_prompts as prompt_dir
+from .utils.paths import stream_extraction_prompt_dir as prompt_dir
 from .utils.logger import Logger
 from .utils.llm_model import LLM_Chat
 
 
 @Logger.section("3 Stream Extraction")
-def stream_extraction(llm_conn: LLM_Chat, domain_desc_str: str, init, feedback: str | None = None) -> dict[str, str]:
+def extract_streams(llm_conn: LLM_Chat, domain_desc_str: str, init, feedback: str | None = None) -> dict[str, str]:
     llm_conn.reset_token_usage()
 
     with open(os.path.join(prompt_dir, "feedback2.txt")) as f:

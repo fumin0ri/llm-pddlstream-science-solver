@@ -4,9 +4,9 @@ from typing import Literal
 from .utils.logger import Logger
 from .utils.pddl_generator import PddlGenerator
 from .utils.llm_model import get_llm
-from .initial_facts_extraction import initial_facts_extraction
-from .stream_extraction import stream_extraction
-from .stream_construction import stream_construction
+from .extract_initial_facts import extract_initial_facts
+from .extract_streams import extract_streams
+from .build_streams import build_streams
 
 
 def run_pipeline(
@@ -40,13 +40,13 @@ def run_pipeline(
     llm_gpt = get_llm(engine=engine)
     Logger.add_domain_desc(domain_task)
 
-    init = initial_facts_extraction(llm_gpt, domain_task, feedback=feedback)
+    init = extract_initial_facts(llm_gpt, domain_task, feedback=feedback)
     PddlGenerator.generate()
 
-    stream_desc = stream_extraction(llm_gpt, domain_task, init, feedback=feedback)
+    stream_desc = extract_streams(llm_gpt, domain_task, init, feedback=feedback)
     PddlGenerator.generate()
 
-    stream_construction(
+    build_streams(
         llm_gpt,
         stream_desc,
         domain_task,

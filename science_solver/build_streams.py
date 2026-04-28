@@ -5,7 +5,7 @@ from typing import Literal
 
 from .utils.pddl_output_utils import combine_blocks
 from .utils.pddl_types import Predicate, Stream
-from .utils.paths import stream_construction_prompts as prompt_dir
+from .utils.paths import stream_construction_prompt_dir as prompt_dir
 from .utils.logger import Logger
 from .utils.pddl_generator import PddlGenerator
 from .utils.llm_model import LLM_Chat
@@ -14,7 +14,7 @@ MESSAGE_HISTORY = {}
 
 
 @Logger.section("4 Stream Construction")
-def stream_construction(
+def build_streams(
         llm_conn: LLM_Chat,
         stream_descs: dict[str, str],
         domain_desc_str: str,

@@ -8,9 +8,9 @@ results_dir = path.join(root_dir, 'results')
 
 # Prompts
 prompt_dir = path.join(science_solver_dir, 'prompts')
-initial_facts_extraction_prompts = path.join(prompt_dir, '1_initial_facts_extraction')
-stream_extraction_prompts = path.join(prompt_dir, '3_stream_extraction')
-stream_construction_prompts = path.join(prompt_dir, '4_stream_construction')
+initial_facts_prompt_dir = path.join(prompt_dir, '1_initial_facts_extraction')
+stream_extraction_prompt_dir = path.join(prompt_dir, '3_stream_extraction')
+stream_construction_prompt_dir = path.join(prompt_dir, '4_stream_construction')
 
 
 # External tools
