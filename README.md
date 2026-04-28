@@ -1,5 +1,7 @@
 # LLM-PDDLStream Science Solver
 
+[日本語版 README](README.ja.md)
+
 This repository is my undergraduate thesis project on solving college-level science word problems by translating natural language into executable `PDDLStream` programs with a large language model.
 
 Instead of asking an LLM to produce a final numeric answer in one shot, this system decomposes the task into symbolic intermediate steps:
@@ -194,6 +196,27 @@ Current grading treats answers as correct when they fall within `0.5%` relative 
   "correct": true
 }
 ```
+
+## One Concrete Example
+
+The following SciBench-style chemistry problem is a good example of how the pipeline works:
+
+> A sample of ethane gas has `n = 10.0 mol`, `V = 4.860 dm^3`, and `T = 27°C`. Find the pressure in `atm`.
+
+The system does not answer this directly. Instead, it generates intermediate artifacts:
+
+- Initial facts
+  `temperature_c(27.0)`, `moles(10.0)`, `volume(4.860)`
+- Stream plan
+  `temp_to_K`: convert Celsius to Kelvin
+  `pressure_from_nRT`: compute pressure from the ideal gas law
+  `final_answer`: expose the computed pressure as the answer
+- Generated execution result
+  `predicted_answer = 50.68`
+  `expected_answer = 50.7`
+  `correct = true`
+
+This example captures the main value of the project: the reasoning process becomes visible as executable symbolic structure, not just a final text answer.
 
 ## What I Learned
 
