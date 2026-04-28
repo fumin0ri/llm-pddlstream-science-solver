@@ -1,7 +1,8 @@
-import os, tiktoken, torch, requests
+import os
+import requests
+import tiktoken
 from retry import retry
 from openai import OpenAI
-from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig, set_seed
 
 from .logger import Logger
 
@@ -222,6 +223,8 @@ class OLLAMA_Chat(LLM_Chat):
 class LOCAL_LLAMA_Chat(LLM_Chat):
     def __init__(self, engine, stop=None, max_tokens=8e3, temperature=0, top_p=1,
                  frequency_penalty=0.0, presence_penalty=0.0, seed=0):
+        import torch
+        from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig, set_seed
 
         model_id = "meta-llama/Meta-Llama-3.1-70B-Instruct"
         access_token = os.environ.get("HF_TOKEN", None)
@@ -234,6 +237,7 @@ class LOCAL_LLAMA_Chat(LLM_Chat):
             load_in_4bit = "4bit" in engine,
             load_in_8bit = "8bit" in engine,
         )
+        self._set_seed = set_seed
         self.quantized_model = AutoModelForCausalLM.from_pretrained(
             model_id, torch_dtype=torch.bfloat16, quantization_config=quantization_config,
             token=access_token, device_map="auto"
@@ -251,7 +255,7 @@ class LOCAL_LLAMA_Chat(LLM_Chat):
         self.out_tokens = 0
 
     def get_response(self, prompt=None, messages=None):
-        set_seed(self.seed)
+        self._set_seed(self.seed)
 
         if prompt is None and messages is None:
             raise ValueError("prompt and messages cannot both be None")

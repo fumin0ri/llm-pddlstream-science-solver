@@ -1,0 +1,19 @@
+{
+  "instance_name": "scibench_dataset_original_atkins_gpt-oss:latest_task1",
+  "result_dir": "results/scibench/scibench_dataset_original_atkins_gpt-oss:latest_task1",
+  "predicted_answer": 50.68,
+  "expected_answer": 50.7,
+  "correct": true,
+  "pddlstream_returncode": 0,
+  "raw_result": {
+    "task": "scibench_dataset_original_atkins_gpt-oss:latest_task1",
+    "success": false,
+    "cost": 0.0,
+    "time_sec": 0.013,
+    "plan": [],
+    "answer": [
+      50.68
+    ],
+    "error": null
+  }
+}

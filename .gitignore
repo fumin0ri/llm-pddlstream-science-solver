@@ -1,2 +1,15 @@
 __pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+.env
+.venv/
+venv/
+env/
+
 results/
+thesis.txt
+
+.pytest_cache/
+.mypy_cache/

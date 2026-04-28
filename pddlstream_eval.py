@@ -8,6 +8,9 @@ import sys
 from pathlib import Path
 from typing import Any
 
+REL_TOLERANCE = 5e-3
+ABS_TOLERANCE = 1e-3
+
 
 def evaluate_task_result(
         project_root: str,
@@ -51,8 +54,8 @@ def evaluate_task_result(
             evaluation["correct"] = math.isclose(
                 predicted,
                 expected,
-                rel_tol=5e-3,
-                abs_tol=1e-3,
+                rel_tol=REL_TOLERANCE,
+                abs_tol=ABS_TOLERANCE,
             )
         else:
             evaluation["correct"] = None

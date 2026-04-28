@@ -133,6 +133,32 @@ python scripts/setup_pddlstream.py
 
 このスクリプトは `external/pddlstream` submodule の初期化、nested submodule の更新、`Fast Downward` の build を行います。新しい `CMake` 環境でも動くよう、フォールバック処理も入っています。
 
+まずはコアとなる Python 依存を入れてください。
+
+```bash
+pip install -r requirements.txt
+```
+
+任意の local quantized Llama backend を使いたい場合のみ、追加で次を入れてください。
+
+```bash
+pip install -r requirements-local-llama.txt
+```
+
+環境変数はテンプレートから作成します。
+
+```bash
+cp .env.example .env
+```
+
+Windows PowerShell の場合:
+
+```powershell
+Copy-Item .env.example .env
+```
+
+このリポジトリでは `.env` は追跡せず、公開用テンプレートとして `.env.example` を置いています。
+
 ## 実行方法
 
 実行例:
@@ -140,6 +166,8 @@ python scripts/setup_pddlstream.py
 ```bash
 python main.py --domain scibench --task dataset/original/atkins --llm gpt-oss:latest
 ```
+
+このコマンドは、ローカルで Ollama サーバーが動いており、互換性のある `gpt-oss` モデルが使えることを前提にしています。OpenAI モデルを使う場合は、`.env` に `OPENAI_API_KEY` を設定し、`gpt-4o` などのモデル名を指定してください。
 
 主なオプション:
 
@@ -197,6 +225,8 @@ results/scibench/<instance_name>/
 }
 ```
 
+同じ内容のサンプルファイルは [docs/sample_atkins_evaluation.json](docs/sample_atkins_evaluation.json) に置いてあります。
+
 ## 具体例
 
 次のような SciBench 形式の化学問題は、このパイプラインの挙動が分かりやすい例です。
@@ -217,6 +247,8 @@ results/scibench/<instance_name>/
   `correct = true`
 
 この例は、この研究の価値をよく表しています。重要なのは最終値そのものだけでなく、推論過程が実行可能な記号構造として明示されることです。
+
+もう少し長めの流れを見たい場合は [docs/sample_atkins_walkthrough.md](docs/sample_atkins_walkthrough.md) を参照してください。
 
 ## この研究で得た学び
 

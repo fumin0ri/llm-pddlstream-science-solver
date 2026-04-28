@@ -1,0 +1,7 @@
+# Optional dependencies for LOCAL_LLAMA_Chat.
+# You only need these if you want to run the local quantized Llama backend.
+
+torch>=2.4.0
+transformers>=4.44.2
+bitsandbytes>=0.43.3
+accelerate>=0.34.2

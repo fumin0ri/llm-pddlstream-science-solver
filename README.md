@@ -133,6 +133,32 @@ python scripts/setup_pddlstream.py
 
 The setup script initializes the `external/pddlstream` submodule, updates nested submodules, and builds `Fast Downward`. It also includes a fallback for newer `CMake` environments.
 
+Install the core Python dependencies:
+
+```bash
+pip install -r requirements.txt
+```
+
+If you want to use the optional local quantized Llama backend, also install:
+
+```bash
+pip install -r requirements-local-llama.txt
+```
+
+Prepare your environment variables from the template:
+
+```bash
+cp .env.example .env
+```
+
+For Windows PowerShell:
+
+```powershell
+Copy-Item .env.example .env
+```
+
+This repository does not track `.env`; use `.env.example` as the public template.
+
 ## Running The Solver
 
 Example:
@@ -140,6 +166,8 @@ Example:
 ```bash
 python main.py --domain scibench --task dataset/original/atkins --llm gpt-oss:latest
 ```
+
+The command above assumes you have a local Ollama server running a compatible `gpt-oss` model. If you want to use an OpenAI model instead, set `OPENAI_API_KEY` in `.env` and pass a model such as `gpt-4o`.
 
 Useful options:
 
@@ -197,6 +225,8 @@ Current grading treats answers as correct when they fall within `0.5%` relative 
 }
 ```
 
+A checked-in sample file is also available at [docs/sample_atkins_evaluation.json](docs/sample_atkins_evaluation.json).
+
 ## One Concrete Example
 
 The following SciBench-style chemistry problem is a good example of how the pipeline works:
@@ -217,6 +247,8 @@ The system does not answer this directly. Instead, it generates intermediate art
   `correct = true`
 
 This example captures the main value of the project: the reasoning process becomes visible as executable symbolic structure, not just a final text answer.
+
+For a slightly longer walkthrough, see [docs/sample_atkins_walkthrough.md](docs/sample_atkins_walkthrough.md).
 
 ## What I Learned
 
