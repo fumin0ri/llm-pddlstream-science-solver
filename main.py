@@ -39,7 +39,7 @@ def main():
         '--act_constr_feedback_level',
         type=str,
         choices=["domain", "stream", "both"],
-        default="domain",
+        default="stream",
         nargs='?'
     )
     parser.add_argument(

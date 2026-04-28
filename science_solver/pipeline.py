@@ -14,7 +14,7 @@ def run_pipeline(
         domain_task: str,
         engine: str,
         act_constr_iters: int = 2,
-        act_constr_feedback_level: Literal["domain", "stream", "both"] = "domain",
+        act_constr_feedback_level: Literal["domain", "stream", "both"] = "stream",
         max_step_4_attempts: int = 5,
         feedback: str | None = None,
         instance_name: str = None,

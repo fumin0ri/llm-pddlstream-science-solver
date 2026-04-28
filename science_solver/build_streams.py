@@ -26,7 +26,7 @@ def build_streams(
         max_iters: int = 2,
         mirror_symmetry: bool = False,
         generalize_predicate_types: bool = False,
-        feedback_level: Literal["domain", "stream", "both"] = "domain",
+        feedback_level: Literal["domain", "stream", "both"] = "stream",
     ) -> tuple[list[Stream], list[Predicate]]:
     global MESSAGE_HISTORY
     MESSAGE_HISTORY = {}
@@ -35,7 +35,15 @@ def build_streams(
     if feedback not in (None, "llm"):
         raise ValueError(f"Unsupported feedback mode: {feedback}")
 
-    stream_feedback = feedback if feedback_level in {"stream", "both"} else None
+    if feedback_level == "domain":
+        Logger.print(
+            "Domain-level feedback is not implemented in build_streams yet; "
+            "falling back to per-stream feedback.",
+            subsection=False
+        )
+        stream_feedback = feedback
+    else:
+        stream_feedback = feedback if feedback_level in {"stream", "both"} else None
 
     stream_list = "\n".join([f"- {name}: {desc}" for name, desc in stream_descs.items()])
 
