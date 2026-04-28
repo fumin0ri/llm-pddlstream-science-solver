@@ -79,9 +79,11 @@ def require_pddlstream_repo(repo_dir: Path) -> Path:
 
 def ensure_downward_build(repo_dir: Path) -> None:
     downward_dir = repo_dir / "downward"
-    build_dir = downward_dir / "builds"
-    if build_dir.exists() and any(build_dir.iterdir()):
+    try:
+        get_downward_translate_path(repo_dir)
         return
+    except FileNotFoundError:
+        pass
 
     subprocess.run(
         [sys.executable, "build.py"],
