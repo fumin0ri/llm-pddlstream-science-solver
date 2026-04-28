@@ -69,7 +69,8 @@ def build_streams(
             stream_descs,
             predicates,
             streams=streams,
-            max_iters=max_attempts,
+            parse_attempts=max_attempts,
+            feedback_rounds=max_iters,
             feedback=stream_feedback,
             shorten_message=shorten_message,
             mirror_symmetry=mirror_symmetry,
@@ -115,7 +116,8 @@ def construct_stream(
         predicates: list[Predicate],
         streams: list[Stream],
         feedback_template: str = None,
-        max_iters: int = 8,
+        parse_attempts: int = 8,
+        feedback_rounds: int = 2,
         shorten_message: bool = False,
         feedback: str | None = True,
         mirror_symmetry: bool = False,
@@ -125,8 +127,10 @@ def construct_stream(
     ) -> tuple[Stream, list[Predicate]]:
     global MESSAGE_HISTORY
 
-    if max_iters < 1:
+    if parse_attempts < 1:
         raise ValueError("The maximum number of attempts during Stream Construction must be at least 1.")
+    if feedback_rounds < 1:
+        raise ValueError("The number of feedback rounds during Stream Construction must be at least 1.")
 
     act_constr_prompt = act_constr_prompt.replace('{stream_desc}', stream_desc)
     act_constr_prompt = act_constr_prompt.replace('{stream_name}', stream_name)
@@ -146,7 +150,7 @@ def construct_stream(
     new_predicates: list[Predicate] = []
     last_error: Exception | None = None
 
-    for iteration in range(max_iters):
+    for iteration in range(parse_attempts):
         Logger.print(f'Generating PDDL of stream: `{stream_name}` | # of messages: {len(messages)}', subsection=False)
         if iteration > 0:
             messages.append({
@@ -190,11 +194,11 @@ def construct_stream(
 
     if stream is None:
         raise RuntimeError(
-            f"construct_stream failed for '{stream_name}' after {max_iters} iterations; last error: {last_error}"
+            f"construct_stream failed for '{stream_name}' after {parse_attempts} iterations; last error: {last_error}"
         )
 
     if feedback is not None:
-        for _ in range(max_iters):
+        for _ in range(feedback_rounds):
             feedback_prompt = feedback_template0
             feedback_prompt = feedback_prompt.replace('{stream_pddl}', stream['pddl'])
             new_predicate_str = new_predicates[0]['signature'] if new_predicates else ""
@@ -219,7 +223,10 @@ def construct_stream(
                 Logger.print(f"Error while parsing stream '{stream_name}': {exc}", subsection=False)
                 last_error = exc
                 continue
-            break
+            messages = [
+                {'role': 'user', 'content': act_constr_prompt},
+                {'role': 'assistant', 'content': llm_output},
+            ]
 
     MESSAGE_HISTORY[stream_name] = messages
     return stream, new_predicates
