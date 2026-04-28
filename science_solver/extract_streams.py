@@ -87,7 +87,16 @@ def revise_solution(
         messages = [
             {'role': 'user', 'content': solution_prompt},
             {'role': 'assistant', 'content': solution},
-            {'role': 'user', 'content': feedback_msg},
+            {
+                'role': 'user',
+                'content': (
+                    "## Feedback\n"
+                    f"{feedback_msg}\n\n"
+                    "Revise the full solution method accordingly. "
+                    "Return a complete step-by-step solution method, not just the changed portion. "
+                    "Do not carry out the final numeric calculation, and do not provide a final numeric answer."
+                ),
+            },
         ]
         solution = llm_conn.get_response(messages=messages).strip()
 

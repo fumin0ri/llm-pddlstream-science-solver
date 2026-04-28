@@ -1,5 +1,8 @@
-Please write a step-by-step solution method for the following problem. 
-You do not need to carry out the actual calculations; just describe the procedure for solving it.
+Please write a step-by-step solution method for the following problem.
+You must describe only the procedure for solving it.
+Do not carry out the final numeric calculation.
+Do not provide a final numeric answer.
+It is acceptable to write symbolic substitutions or identify which values would be substituted, but stop before evaluating the final expression numerically.
 
 # Task
 {domain_desc}
