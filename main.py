@@ -3,6 +3,8 @@ import copy
 import json
 import os
 
+from pddlstream_eval import evaluate_task_result
+
 root_dir = os.path.dirname(os.path.realpath(__file__))
 domain_dir = os.path.join(root_dir, 'domains')
 domains = os.listdir(domain_dir)
@@ -48,6 +50,17 @@ def main():
         default=5,
         help='Maximum retries per stream during stream construction.'
     )
+    parser.add_argument(
+        '--skip_pddlstream_eval',
+        action='store_true',
+        help='Skip executing generated PDDLStream artifacts and SciBench grading.'
+    )
+    parser.add_argument(
+        '--pddlstream_dir',
+        type=str,
+        default=os.path.join(root_dir, 'external', 'pddlstream'),
+        help='Directory where the PDDLStream repository is cloned.'
+    )
 
     args = parser.parse_args()
 
@@ -81,6 +94,25 @@ def main():
             f"from {args.task}.json and LLM {current_args.llm}.\n{'-' * 50}"
         )
         run_science_solver(current_args)
+
+        if not args.skip_pddlstream_eval and current_args.domain == "scibench":
+            evaluation = evaluate_task_result(
+                project_root=root_dir,
+                domain=current_args.domain,
+                instance_name=current_args.instance_name,
+                task_item=task_item,
+                pddlstream_dir=args.pddlstream_dir,
+            )
+            if evaluation.get("error"):
+                print(f"PDDLStream evaluation failed: {evaluation['error']}")
+            else:
+                predicted = evaluation.get("predicted_answer")
+                expected = evaluation.get("expected_answer")
+                correct = evaluation.get("correct")
+                print(
+                    "PDDLStream evaluation: "
+                    f"predicted={predicted}, expected={expected}, correct={correct}"
+                )
         print(f"\nFinished task ID {task_id}.\n{'=' * 50}\n")
 
 
